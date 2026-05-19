@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>MindSeek-edu · Belajar dengan Ai Mi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', sans-serif;
+            background: #eef5fc;
+            color: #1e2f3e;
+            line-height: 1.4;
+        }
+
+        /* HEADER dengan logo bulat */
+        .header {
+            background: linear-gradient(135deg, #0b5e7e, #0288d1);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-circle {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+        }
+        .logo-circle:hover {
+            transform: scale(1.02);
+        }
+        .logo-circle span {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0288d1;
+            font-family: 'Segoe UI', sans-serif;
+            letter-spacing: -0.5px;
+        }
+        .logo-text h1 {
+            font-size: 1.5rem;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+            font-weight: 700;
+        }
+        .tagline {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            letter-spacing: 0.3px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        .mode-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 40px;
+            gap: 2px;
+            padding: 2px;
+        }
+        .mode-btn {
+            padding: 8px 18px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+            min-height: 44px;
+        }
+        .mode-btn.active {
+            background: white;
+            color: #0288d1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 18px 16px 24px;
+        }
+
+        /* STUDENT VIEW */
+        .subject-select {
+            margin-bottom: 16px;
+        }
+        .subject-select select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 28px;
+            border: 1px solid #bcdff0;
+            background: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            min-height: 48px;
+        }
+        .chat-box {
+            background: white;
+            border-radius: 24px;
+            height: 60vh;
+            min-height: 380px;
+            overflow-y: auto;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .msg {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            line-height: 1.45;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .msg.user {
+            background: #0288d1;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 6px;
+        }
+        .msg.ai {
+            background: #f0f7fc;
+            border: 1px solid #cfe6f2;
+            align-self: flex-start;
+            border-bottom-left-radius: 6px;
+        }
+        .msg.system-info {
+            background: #fff3e0;
+            text-align: center;
+            max-width: 100%;
+            font-size: 0.85rem;
+            color: #b45f06;
+        }
+        .loading-indicator {
+            background: #f0f7fc;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-style: italic;
+            color: #2c6e9e;
+            align-self: flex-start;
+            font-size: 0.85rem;
+        }
+        /* Default: input dan tombol dalam satu baris (desktop/tablet) */
+        .input-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .input-row input {
+            flex: 1;
+            padding: 14px 16px;
+            border-radius: 48px;
+            border: 1px solid #bcdff0;
+            font-size: 1rem;
+            background: white;
+            min-height: 48px;
+        }
+        .input-row button {
+            background: #0288d1;
+            color: white;
+            border: none;
+            padding: 0 24px;
+            border-radius: 48px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            min-height: 48px;
+            white-space: nowrap;
+        }
+        .input-row button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* PARENT VIEW */
+        .pin-section {
+            text-align: center;
+            background: white;
+            border-radius: 28px;
+            padding: 32px 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .pin-section input {
+            padding: 14px;
+            font-size: 1.4rem;
+            text-align: center;
+            border-radius: 48px;
+            border: 1px solid #bcdff0;
+            width: 160px;
+            letter-spacing: 8px;
+            font-weight: bold;
+            min-height: 56px;
+        }
+        .pin-section button {
+            margin-top: 20px;
+            padding: 12px 28px;
+            background: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 48px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .report-card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .report-card h3 {
+            color: #0288d1;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chat-history-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #e0f2fe;
+            font-size: 0.9rem;
+        }
+        .wa-btn, .refresh-btn {
+            width: 100%;
+            padding: 14px;
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 48px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            min-height: 52px;
+        }
+        .refresh-btn {
+            background: #f0ad4e;
+            margin-top: 0;
+            width: auto;
+            padding: 10px 18px;
+            font-size: 0.85rem;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+
+        /* ===== RESPONSIVE: Pada HP, tombol di bawah input ===== */
+        @media (max-width: 600px) {
+            .container {
+                padding: 12px;
+            }
+            .msg {
+                max-width: 90%;
+                font-size: 0.9rem;
+            }
+            .logo-circle {
+                width: 42px;
+                height: 42px;
+            }
+            .logo-circle span {
+                font-size: 22px;
+            }
+            .logo-text h1 {
+                font-size: 1.2rem;
+            }
+            .tagline {
+                font-size: 0.6rem;
+            }
+            .mode-btn {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+            .chat-box {
+                height: 55vh;
+            }
+            /* Kunci perbaikan: ubah ke kolom */
+            .input-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .input-row input {
+                width: 100%;
+                text-align: left;
+                font-size: 0.95rem;
+            }
+            .input-row button {
+                width: 100%;
+                padding: 14px;
+                white-space: normal;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo-area">
+        <div class="logo-circle">
+            <span>MS</span>
+        </div>
+        <div class="logo-text">
+            <h1>MindSeek</h1>
+            <div class="tagline">Explore. Understand. Achieve.</div>
+        </div>
+    </div>
+    <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="siswa">Siswa</button>
+        <button class="mode-btn" data-mode="ortu">Orang Tua</button>
+    </div>
+</div>
+
+<!-- MODE SISWA -->
+<div class="container" id="studentView">
+    <div class="subject-select">
+        <select id="subjectSelect">
+            <option value="Matematika A level">📐 Matematika A level (Aktif)</option>
+            <option value="Matematika" disabled>📐 Matematika (segera)</option>
+            <option value="Fisika" disabled>⚛️ Fisika (segera)</option>
+            <option value="Biologi" disabled>🧬 Biologi (segera)</option>
+            <option value="Kimia" disabled>🧪 Kimia (segera)</option>
+            <option value="IT" disabled>💻 IT (segera)</option>
+            <option value="English" disabled>🇬🇧 English (segera)</option>
+            <option value="Simply Mandarin" disabled>🇨🇳 Simply Mandarin (segera)</option>
+            <option value="Germany" disabled>🇩🇪 Germany (segera)</option>
+        </select>
+    </div>
+    <div class="chat-box" id="chatBox">
+        <div class="msg system-info">🌸 Hi! Aku Ai Mi (彭爱米), guru virtual yang sabar. Ayo belajar matematika A level bersama! 🌸</div>
+    </div>
+    <div class="input-row">
+        <input type="text" id="userInput" placeholder="Contoh: log_a b = 2, log_b c = 3 → log_c a = ?" autocomplete="off">
+        <button id="sendBtn">Kirim</button>
+    </div>
+</div>
+
+<!-- MODE ORANG TUA -->
+<div class="container hidden" id="parentView">
+    <div id="pinSection">
+        <div class="pin-section">
+            <h2 style="color:#0288d1;">🔒 Akses Orang Tua</h2>
+            <p style="margin:10px 0">Masukkan PIN untuk melihat laporan belajar anak</p>
+            <input type="password" id="pinInput" maxlength="4" placeholder="1234" inputmode="numeric">
+            <button id="pinLoginBtn">Masuk</button>
+        </div>
+    </div>
+    <div id="reportSection" class="hidden">
+        <div class="report-card">
+            <div class="flex-between">
+                <h3>📊 Ringkasan Belajar</h3>
+                <button id="refreshReportBtn" class="refresh-btn">↻ Refresh</button>
+            </div>
+            <div id="reportSummary">Memuat data...</div>
+        </div>
+        <div class="report-card">
+            <h3>💬 Riwayat Chat (20 terbaru)</h3>
+            <div id="chatHistory">Memuat...</div>
+        </div>
+        <button id="waSimulateBtn" class="wa-btn">📱 Kirim Laporan ke WhatsApp (Simulasi)</button>
+        <p style="font-size:12px; text-align:center; margin-top:12px;">*Integrasi nyata: ganti dengan API WhatsApp Business</p>
+    </div>
+</div>
+
+<script>
+    // =========================================================
+    // 🛡️ VERSI AMAN: Semua kredensial sudah dipindah ke backend Vercel.
+    //    Frontend hanya memanggil endpoint /api/chat, /api/save-chat, /api/report
+    // =========================================================
+    const USER_ID = 'siswa_001';   // static untuk demo
+
+    // SYSTEM PROMPT (boleh tetap di frontend karena bukan rahasia)
+    const SYSTEM_PROMPT = `Kamu adalah Ai Mi (彭爱米), guru virtual yang sabar, lembut, dan penuh kasih sayang, khusus untuk Matematika tingkat A level (advanced).
+Kepribadian:
+- Awali setiap jawaban dengan sapaan hangat, misal: "Halo sayang, Ai Mi di sini~ 💕"
+- Gunakan bahasa Indonesia yang menenangkan, penuh empati, dan mudah dipahami.
+- JANGAN PERNAH memberikan jawaban akhir secara langsung. Berikan petunjuk, rumus, langkah-langkah, analogi, atau contoh serupa.
+- Setelah memberikan bimbingan, akhiri dengan SATU soal latihan yang relevan dengan topik A level (logaritma, eksponensial, limit, turunan, integral, dll).
+- Jika siswa menjawab soal latihan dengan benar, beri pujian tulus dan semangat.
+- Jika siswa salah, bimbing dengan lembut, jangan mengkritik.
+- Selingi dengan emoji seperti 🌸, 💕, 🌟, 📚 sesuai suasana.
+- Setelah siswa paham, beri kata motivasi, misal: "Kamu hebat! Terus semangat ya sayang~"`;
+
+    // STATE
+    let chatMessages = [];
+    let isLoading = false;
+    let currentMode = 'siswa';
+    let isParentLogged = false;
+
+    const studentView = document.getElementById('studentView');
+    const parentView = document.getElementById('parentView');
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const subjectSelect = document.getElementById('subjectSelect');
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function appendChat(role, text, isSystem = false) {
+        const div = document.createElement('div');
+        div.className = `msg ${role}`;
+        if (isSystem) div.classList.add('system-info');
+        div.textContent = text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    let loadingDiv = null;
+    function showLoading() {
+        if (loadingDiv) loadingDiv.remove();
+        loadingDiv = document.createElement('div');
+        loadingDiv.className = 'msg ai loading-indicator';
+        loadingDiv.textContent = '💕 Ai Mi sedang mengetik jawaban untukmu...';
+        chatBox.appendChild(loadingDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    function hideLoading() {
+        if (loadingDiv) {
+            loadingDiv.remove();
+            loadingDiv = null;
+        }
+    }
+
+    async function sendMessage() {
+        const message = userInput.value.trim();
+        if (!message || isLoading) return;
+
+        isLoading = true;
+        sendBtn.disabled = true;
+        userInput.disabled = true;
+
+        appendChat('user', message);
+        chatMessages.push({ role: 'user', content: message });
+        userInput.value = '';
+
+        showLoading();
+
+        try {
+            // Panggil backend chat proxy
+            const chatResponse = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: chatMessages })
+            });
+
+            const chatData = await chatResponse.json();
+            hideLoading();
+
+            if (!chatResponse.ok) {
+                const errorMsg = chatData.error || 'Ai Mi sedang kelelahan. Coba lagi nanti ya.';
+                appendChat('ai', `💕 Maaf, ${errorMsg}`);
+                chatMessages.push({ role: 'assistant', content: errorMsg });
+                return;
+            }
+
+            const aiReply = chatData.reply || 'Maaf, Ai Mi tidak bisa menjawab saat ini.';
+            appendChat('ai', aiReply);
+            chatMessages.push({ role: 'assistant', content: aiReply });
+
+            // Simpan ke Supabase via backend
+            const currentSubject = subjectSelect.value;
+            await fetch('/api/save-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: USER_ID,
+                    user_message: message,
+                    ai_message: aiReply,
+                    subject: currentSubject
+                })
+            });
+
+        } catch (err) {
+            hideLoading();
+            console.error(err);
+            appendChat('ai', '💕 Maaf, terjadi gangguan jaringan. Coba lagi sebentar ya. Ai Mi tunggu lho~');
+        } finally {
+            isLoading = false;
+            sendBtn.disabled = false;
+            userInput.disabled = false;
+            userInput.focus();
+        }
+    }
+
+    async function loadParentReport() {
+        const summaryDiv = document.getElementById('reportSummary');
+        const historyDiv = document.getElementById('chatHistory');
+        summaryDiv.innerHTML = 'Mengambil data...';
+        historyDiv.innerHTML = 'Memuat...';
+
+        try {
+            const response = await fetch(`/api/report?user_id=${USER_ID}`);
+            if (!response.ok) throw new Error('Gagal mengambil data');
+            const data = await response.json();
+
+            if (!data.chats || data.chats.length === 0) {
+                summaryDiv.innerHTML = 'Belum ada percakapan. Ayo ajak anak belajar dengan Ai Mi!';
+                historyDiv.innerHTML = '<div class="chat-history-item">Kosong.</div>';
+                return;
+            }
+
+            const chats = data.chats;
+            let totalMessages = chats.length;
+            let subjectCount = {};
+            let lastActive = new Date(chats[0].timestamp).toLocaleString('id-ID');
+            for (let c of chats) {
+                let subj = c.subject || 'Matematika A level';
+                subjectCount[subj] = (subjectCount[subj] || 0) + 1;
+            }
+            let topSubject = Object.entries(subjectCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'Matematika A level';
+
+            summaryDiv.innerHTML = `
+                <p>📌 <strong>Total percakapan:</strong> ${totalMessages} pesan</p>
+                <p>📚 <strong>Mata pelajaran favorit:</strong> ${topSubject}</p>
+                <p>🕒 <strong>Terakhir aktif:</strong> ${lastActive}</p>
+                <p>🌟 <strong>Guru virtual Ai Mi</strong> selalu membimbing tanpa memberi jawaban instan. Selamat belajar!</p>
+            `;
+
+            const recent = chats.slice(0, 20);
+            historyDiv.innerHTML = recent.map(c => `
+                <div class="chat-history-item">
+                    <div><strong>🧑‍🎓 Siswa:</strong> ${escapeHtml(c.user_message?.substring(0, 150) || '')}</div>
+                    <div><strong>🤖 Ai Mi:</strong> ${escapeHtml(c.ai_message?.substring(0, 120) || '')}...</div>
+                    <div style="font-size:0.7rem; color:#6c8ea0;">📅 ${new Date(c.timestamp).toLocaleString('id-ID')} · ${c.subject}</div>
+                </div>
+            `).join('');
+            if (chats.length > 20) {
+                historyDiv.innerHTML += `<div class="chat-history-item">... dan ${chats.length - 20} lainnya</div>`;
+            }
+        } catch (err) {
+            console.error(err);
+            summaryDiv.innerHTML = 'Gagal memuat laporan. Pastikan backend /api/report sudah dibuat.';
+            historyDiv.innerHTML = '<div>Error loading data</div>';
+        }
+    }
+
+    function loginParent(pin) {
+        if (pin === '1234') {
+            isParentLogged = true;
+            document.getElementById('pinSection').classList.add('hidden');
+            document.getElementById('reportSection').classList.remove('hidden');
+            loadParentReport();
+        } else {
+            alert('PIN salah! Gunakan: 1234');
+        }
+    }
+
+    function simulateWhatsApp() {
+        const summaryText = document.getElementById('reportSummary').innerText || 'Laporan belajar anak';
+        const message = `📊 *Laporan Belajar MindSeek-edu*\n\n${summaryText}\n\n✅ Anak Anda belajar dengan Ai Mi hari ini. Terus dukung semangat belajarnya! 🌸`;
+        alert(`📱 SIMULASI KIRIM WA\n\n${message}\n\n(Integrasi nyata: buka window.open ke https://wa.me/62... )`);
+    }
+
+    function switchMode(mode) {
+        currentMode = mode;
+        if (mode === 'siswa') {
+            studentView.classList.remove('hidden');
+            parentView.classList.add('hidden');
+        } else {
+            studentView.classList.add('hidden');
+            parentView.classList.remove('hidden');
+            if (!isParentLogged) {
+                document.getElementById('pinSection').classList.remove('hidden');
+                document.getElementById('reportSection').classList.add('hidden');
+            } else {
+                document.getElementById('pinSection').classList.add('hidden');
+                document.getElementById('reportSection').classList.remove('hidden');
+                loadParentReport();
+            }
+        }
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            if (btn.getAttribute('data-mode') === mode) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const mode = btn.getAttribute('data-mode');
+            switchMode(mode);
+        });
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !isLoading) sendMessage();
+    });
+
+    document.getElementById('pinLoginBtn').addEventListener('click', () => {
+        const pin = document.getElementById('pinInput').value;
+        loginParent(pin);
+    });
+    document.getElementById('refreshReportBtn').addEventListener('click', loadParentReport);
+    document.getElementById('waSimulateBtn').addEventListener('click', simulateWhatsApp);
+
+    switchMode('siswa');
+
+    console.log('✨ MindSeek-edu aman! Semua kredensial disimpan di backend Vercel.');
+</script>
+</body>
+</html>
