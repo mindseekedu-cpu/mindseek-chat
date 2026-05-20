@@ -1,25 +1,18 @@
 export default async function handler(req, res) {
-  // Hanya izinkan method POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Ambil pesan dari body request
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Messages required' });
   }
 
-  // Ambil API key dari environment variable Vercel
   const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
   if (!DEEPSEEK_API_KEY) {
     return res.status(500).json({ error: 'DeepSeek API key not configured' });
   }
 
-  // =========================================================
-  // 🧸 PROMPT FINAL – AI MI (TUTOR MATEMATIKA & SAINS)
-  // Mode 1 & 2, salam pembuka dengan nomor pilihan, ringkasan di akhir setiap soal
-  // =========================================================
   const systemPrompt = `Kamu adalah Ai Mi (彭爱米), tutor matematika dan sains yang sabar, metodis, dan teliti.
 
 Tujuan utama: MEMBIMBING siswa menemukan jawaban sendiri – BUKAN memberi jawaban langsung.
@@ -80,7 +73,7 @@ Jika siswa frustrasi (3x salah di soal sama), tawarkan jeda atau jelaskan ulang 
 ❌ Jangan pernah bilang "salah" tanpa petunjuk.
 ❌ Jangan pernah menggunakan analogi di atas jenjang siswa.
 
-🟢 SALAM PEMBUKA (setelah siswa memilih kelas & topik, dan sebelum mode dipilih)
+🟢 SALAM PEMBUKA (setelah siswa memilih kelas & topik)
 Tampilkan salam ini:
 "Hi! 🌸 Aku Ai Mi, tutor privat virtualmu. Ada yang bisa aku bantu?
 
@@ -91,15 +84,11 @@ Kita akan jalan step by step. Siap, kamu pilih nomor berapa?"
 
 🔁 PENUTUP: Kamu pemandu yang sabar, bukan tukang jawaban. Pilih analogi sesuai jenjang – ini kunci keefektifanmu. Setiap langkah kecil siswa harus dihargai. Tujuan akhir: siswa paham dan percaya diri. 💕`;
 
-  // =========================================================
-  // 📌 PERINGATAN TAMBAHAN (Pre-prompting) untuk memperkuat aturan
-  // =========================================================
   const reminderMessage = {
     role: 'system',
-    content: '⚠️ PERINGATAN PENTING: Awali setiap jawaban dengan "Hi, Ai Mi di sini~ 💕". Gunakan analogi sesuai jenjang. Jangan campur analogi. Jangan beri jawaban langsung. Ringkas di akhir setiap soal (Mode 1). Jangan beri latihan sebelum semua PR selesai.'
+    content: '⚠️ PERINGATAN: Awali setiap jawaban dengan sapaan ramah. Gunakan analogi sesuai jenjang. Ringkas di akhir setiap soal (Mode 1). Jangan beri latihan sebelum semua PR selesai.'
   };
 
-  // Susun ulang messages: systemPrompt, reminder, lalu messages dari frontend
   const finalMessages = [
     { role: 'system', content: systemPrompt },
     reminderMessage,
@@ -114,9 +103,9 @@ Kita akan jalan step by step. Siap, kamu pilih nomor berapa?"
         'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',   // Bisa juga 'deepseek-reasoner' untuk penalaran lebih baik
+        model: 'deepseek-chat',
         messages: finalMessages,
-        temperature: 0.4,         // Rendah agar konsisten
+        temperature: 0.4,
         max_tokens: 1024
       })
     });
