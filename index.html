@@ -445,22 +445,7 @@ Kepribadian:
         });
     }
 
-    // ========== NORMALISASI NOTASI MATEMATIKA (UNTUK A LEVEL) ==========
-    function normalizeMathNotation(text) {
-        // 1. Ubah pangkat Unicode (², ³) menjadi ^2, ^3
-        text = text.replace(/²/g, '^2');
-        text = text.replace(/³/g, '^3');
-        // 2. Ubah pola huruf diikuti angka (tanpa operator) menjadi huruf^angka
-        //    Contoh: x2 -> x^2,  y3 -> y^3, tetapi tidak mengubah 2x (angka lalu huruf)
-        //    Menggunakan lookbehind untuk memastikan tidak ada huruf/angka sebelumnya? Sederhana: (huruf)(angka)
-        text = text.replace(/([a-zA-Z])(\d+)/g, '$1^$2');
-        // 3. Ubah pola yang sudah salah seperti "x^2" sudah ok, tapi kadang "x2" di tengah ekspresi sudah diubah.
-        // 4. Hati-hati: "2x" (angka lalu huruf) tidak diubah karena regex hanya huruf lalu angka.
-        // 5. Ubah tanda kurung yang tidak perlu? Tidak.
-        // 6. Ubah "x²" jika masih ada unicode (sudah diubah ke ^2).
-        return text;
-    }
-
+    
     // ========== INTEGRASI OCR.space via BACKEND PROXY ==========
     async function extractTextWithOcrSpace(file) {
         return new Promise((resolve, reject) => {
