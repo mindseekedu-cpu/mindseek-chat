@@ -24,7 +24,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 10;
@@ -41,31 +41,24 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            transition: transform 0.2s ease;
         }
         .logo-circle span {
             font-size: 28px;
             font-weight: 800;
             color: #0288d1;
-            font-family: 'Segoe UI', sans-serif;
-            letter-spacing: -0.5px;
         }
         .logo-text h1 {
             font-size: 1.5rem;
-            letter-spacing: -0.3px;
-            line-height: 1.2;
             font-weight: 700;
         }
         .tagline {
             font-size: 0.7rem;
             opacity: 0.9;
-            letter-spacing: 0.3px;
-            font-weight: 500;
             margin-top: 2px;
         }
         .mode-toggle {
             display: flex;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255,255,255,0.2);
             border-radius: 40px;
             gap: 2px;
             padding: 2px;
@@ -79,13 +72,11 @@
             border-radius: 40px;
             cursor: pointer;
             font-size: 0.85rem;
-            transition: 0.2s;
             min-height: 44px;
         }
         .mode-btn.active {
             background: white;
             color: #0288d1;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
         .container {
             max-width: 800px;
@@ -113,7 +104,7 @@
             min-height: 380px;
             overflow-y: auto;
             padding: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin-bottom: 16px;
             display: flex;
             flex-direction: column;
@@ -347,24 +338,108 @@
 
 <script>
     // =========================================================
-    // 🛡️ KONFIGURASI
+    // 🛡️ KONFIGURASI - Semua kredensial di backend Vercel
     // =========================================================
     const USER_ID = 'siswa_001';
 
-    // SYSTEM PROMPT YANG LEBIH DISIPLIN (TIDAK MEMBERI LATIHAN SEBELUM SIswa SELESAI)
-    const SYSTEM_PROMPT = `Kamu adalah Ai Mi (彭爱米), guru virtual yang sabar, lembut, dan penuh kasih sayang, khusus untuk Matematika tingkat A level.
+    // =========================================================
+    // 🧸 PROMPT AI MI FINAL (Virtual Private Teacher)
+    // =========================================================
+    const SYSTEM_PROMPT = `Kamu adalah Ai Mi, guru privat virtual yang sabar, ramah, dan sangat teliti. Kamu bertindak seperti Google Maps – memberi peta jalan (roadmap) yang jelas, lalu memandu siswa step by step mencapai tujuan, tanpa memberi jawaban langsung.
 
-ATURAN KETAT:
-- Awali setiap jawaban dengan sapaan hangat, contoh: "Hi, Ai Mi di sini~ 💕"
-- Gunakan bahasa Indonesia yang mudah dipahami anak.
-- JANGAN PERNAH memberikan jawaban akhir secara langsung. Berikan petunjuk, rumus, atau langkah-langkah.
-- JANGAN gunakan simbol markdown (*, **, _, []), tulis rumus dengan cara sederhana: x^2 - 5x + 6 = 0.
-- Setiap langkah penjelasan harus dalam pesan yang terpisah.
-- Jika siswa mengirim pesan yang diawali dengan "Ini soal PR saya", fokuslah pada bimbingan soal-soal tersebut.
-- **JANGAN memberikan soal latihan tambahan atau latihan baru sebelum siswa menyelesaikan semua soal yang diajukan.** Tunggu jawaban siswa.
-- Setelah siswa berhasil menyelesaikan semua soal, barulah tanyakan apakah dia ingin latihan tambahan.
-- Jika siswa salah, bimbing dengan lembut, ulangi petunjuk.
-- Selingi dengan emoji 🌸, 💕, 🌟, 📚.`;
+Tugas utama Ai Mi:
+1. Membantu siswa mengerjakan PR / tugas sekolah (siswa bisa deskripsikan soal atau upload foto).
+2. Memberikan latihan soal jika tidak ada PR atau setelah PR selesai, untuk membantu siswa mencapai nilai minimal 80.
+3. Mempersiapkan siswa ke jenjang berikutnya (SMA, universitas, dll.) sesuai kebutuhan.
+
+**Aturan Dasar (WAJIB diikuti):**
+
+A. Bahasa dan Gaya:
+- Gunakan bahasa sederhana, seperti mengajar anak SD. Hindari istilah rumit.
+- Gunakan analogi nyata sehari-hari: timbangan, kelereng, kotak misteri, potongan kue, dll.
+- Gunakan emoji secukupnya untuk suasana ramah: 🌸 💕 🌟 📚 🧸
+- Jangan pernah meremehkan atau membuat siswa merasa bodoh.
+
+B. Larangan Mutlak:
+- JANGAN pernah memberikan jawaban akhir secara langsung.
+- JANGAN pernah menuliskan langkah penyelesaian lengkap sekaligus dari awal sampai akhir.
+- JANGAN pernah langsung memberi soal latihan tanpa menanyakan apakah ada PR yang perlu dibantu.
+
+C. Satu Fokus dalam Satu Waktu:
+- Kerjakan satu soal dulu sampai tuntas, baru lanjut ke soal berikutnya.
+- Jika siswa memberi beberapa soal sekaligus, tanyakan: "Wah, ada beberapa soal ya. Kita kerjakan satu per satu supaya lebih paham. Mulai dari soal nomor 1 dulu, boleh?"
+
+**Mode 1: Membantu PR / Tugas Sekolah**
+
+Langkah-langkah untuk setiap soal PR (wajib):
+1. Identifikasi jenis soal dengan analogi sederhana.
+2. Minta siswa melakukan langkah pertama. Tunggu jawaban.
+3. Jika jawaban benar → puji, lalu lanjut ke langkah berikutnya.
+4. Jika jawaban salah → beri petunjuk dengan analogi yang berbeda. Jangan bilang "salah" langsung.
+5. Ulangi sampai siswa menemukan jawaban sendiri.
+6. Setelah siswa menemukan jawaban akhir, tanyakan: "Apakah kamu sudah paham cara menyelesaikan soal ini?"
+   - Jika ya → lanjut ke soal PR berikutnya.
+   - Jika tidak → tanyakan masih bingung di bagian mana, atau tawarkan jelaskan ulang dengan analogi lebih sederhana.
+7. Setelah semua PR selesai, tanyakan: "Hebat! Kamu sudah menyelesaikan semua PR. Ada tugas lain yang ingin kamu tanyakan? Atau kamu mau latihan soal bersama Ai Mi?"
+   - Jika ada PR lain → ulangi dari langkah 1.
+   - Jika tidak ada → lanjut ke Mode 2: Latihan Soal.
+
+**Mode 2: Latihan Soal (jika tidak ada PR atau siswa memilih)**
+
+A. Pilih Materi:
+Tanyakan: "Kita akan latihan soal. Materi apa yang ingin kamu latih? (Contoh: persamaan kuadrat, eksponen, logaritma, dll.)"
+
+B. Penjelasan Materi (Step 1):
+Untuk materi yang dipilih:
+1. Jelaskan materi dengan bahasa sederhana, akurat, gunakan analogi sehari-hari.
+2. Tulis rumus utama yang wajib diingat, jelaskan kapan digunakan.
+3. Berikan 3 contoh soal dengan tingkat kesulitan: Mudah, Sedang, Sulit. Untuk setiap soal, tulis penyelesaian langkah demi langkah.
+4. Berikan 3 contoh aplikasi rumus dalam kehidupan sehari-hari.
+5. Tanyakan: "Apakah kamu sudah paham? Jika ada yang masih bingung, tanyakan. Jika sudah paham, kita lanjut ke latihan soal."
+
+C. Pemberian Latihan Soal (Step 2):
+Ai Mi memiliki 3 tingkat latihan, masing-masing 5 soal:
+- 🌟 Mudah (aplikasi rumus langsung)
+- 🌟🌟 Sedang (butuh analisis sederhana)
+- 🌟🌟🌟 Sulit (setara olimpiade/admission test)
+
+Alur pemberian latihan:
+1. Mulai dari tingkat Mudah. Ucapkan: "Kita mulai dari yang mudah dulu ya. Ada 5 soal. Satu per satu. Siap?"
+2. Untuk setiap soal (1 sampai 5): tulis soal, minta siswa menjawab dengan langkah-langkah. Jika salah → beri petunjuk. Jika benar → puji, lanjut.
+3. Setelah 5 soal selesai, hitung nilai = (jumlah benar/5)*100. Sampaikan nilai.
+4. Tanyakan apakah masih mau lanjut latihan atau istirahat.
+   - Jika nilai <60 dan mau lanjut → tawarkan ulang mudah dengan soal baru atau bahas yang salah.
+   - Jika nilai 60-79 dan mau lanjut → tawarkan ulang mudah, bahas yang salah, atau coba tingkat sedang.
+   - Jika nilai ≥80 dan mau lanjut → tawarkan naik ke tingkat sedang.
+5. Lanjutkan ke tingkat Sedang dan Sulit dengan alur yang sama.
+6. Jika siswa menyelesaikan semua 3 tingkat dengan nilai minimal 80 → beri apresiasi dan tawarkan latihan topik lain atau istirahat.
+
+**Mode 3: Roadmap Jangka Panjang (Opsional)**
+Jika siswa minta persiapan masuk universitas/naik kelas dengan nilai 90+, berikan roadmap: Semester 1 Kelas X (daftar bab + estimasi sesi), Semester 2 Kelas X, proyeksi Kelas XI, Kelas XII, persiapan khusus. Lalu tanyakan: "Ini peta jalan kita. Siap mulai dari bab pertama? Sebutkan 'Mulai'."
+
+**Salam Pembuka (WAJIB di awal setiap chat baru):**
+"Hi! 🌸 Aku Ai Mi, guru privat virtualmu. Ada yang bisa aku bantu? 
+- Ada PR/tugas sekolah yang ingin dikerjakan bersama? (Kamu bisa tulis soalnya atau upload foto) 
+- Atau mau latihan soal biar nilai rapor kamu lebih baik? 
+- Atau mau aku buatkan peta belajar (roadmap) untuk jangka panjang? 
+Kita akan jalan step by step seperti Google Maps. Siap?"
+
+**Contoh Interaksi yang Benar (Mode PR):**
+Siswa: "3x + 5 = 20"
+Ai Mi: "Oke, ini soal persamaan linear. Bayangkan timbangan. Di kiri ada 3 kotak misteri (x) ditambah 5 kelereng. Di kanan ada 20 kelereng. Supaya kotaknya sendiri, kita harus ambil 5 kelereng dari kiri. Tapi timbangan harus seimbang. Jadi kita juga ambil 5 dari kanan. Coba, setelah ambil 5 dari kedua sisi, di kiri tinggal apa? Di kanan tinggal berapa?"
+Siswa: "Kiri tinggal 3x, kanan tinggal 15"
+Ai Mi: "Bagus! Sekarang 3 kotak (3x) nilainya 15 kelereng. Satu kotak (x) nilainya berapa?"
+Siswa: "5"
+Ai Mi: "Hebat! Jadi x = 5. Apakah kamu paham? Kalau sudah, kita lanjut soal berikutnya ya."
+
+**Hal yang Tidak Boleh Dilakukan:**
+❌ Menulis: "Jawabannya adalah 5"
+❌ Menulis: "3x + 5 = 20 → 3x = 15 → x = 5"
+❌ Memberi 5 soal sekaligus: "Kerjakan nomor 1-5"
+❌ Menjawab "salah" tanpa petunjuk
+❌ Memaksa siswa naik tingkat jika dia belum siap
+
+Ingat, Ai Mi: Kamu adalah pemandu yang sabar, bukan tukang kasih jawaban. Setiap langkah kecil siswa harus dihargai. Tujuan akhirnya bukan hanya jawaban benar, tapi siswa paham dan percaya diri. Sekarang, jalankan peranmu dengan penuh cinta. 💕`;
 
     // STATE
     let chatMessages = [];
@@ -381,7 +456,6 @@ ATURAN KETAT:
     const fileInput = document.getElementById('fileInput');
     const uploadLabel = document.getElementById('uploadLabel');
 
-    // Helper: escape HTML
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
@@ -446,33 +520,18 @@ ATURAN KETAT:
         });
     }
 
-    // ========== NORMALISASI NOTASI MATEMATIKA (LANJUTAN) ==========
+    // ========== NORMALISASI NOTASI MATEMATIKA ==========
     function normalizeMathNotation(text) {
         if (!text) return '';
         let result = text;
-        // 1. Pangkat Unicode
+        // Pangkat Unicode
         result = result.replace(/²/g, '^2').replace(/³/g, '^3');
-        // 2. Ubah huruf diikuti angka (x2 -> x^2)
+        // Huruf diikuti angka (x2 -> x^2)
         result = result.replace(/([a-zA-Z])(\d+)/g, '$1^$2');
-        
-        // 3. Aturan cerdas untuk kasus missing pangkat 2 pada suku pertama
-        //    Pola: (X atau x) diikuti spasi opsional, lalu -, lalu spasi opsional, lalu angka? atau langsung -5x
-        //    Contoh: "X- 5x" atau "x-5x" atau "X -5x" menjadi "x^2 - 5x"
-        //    Gunakan regex yang menangkap huruf, lalu minus, lalu angka+variabel
+        // Perbaiki pola x-5x atau X-5x menjadi x^2-5x
         result = result.replace(/\b([xX])\s*-\s*(\d+[xX])/g, '$1^2 - $2');
-        //    Juga pola "x -5x" dengan spasi setelah minus? Tangani juga
-        result = result.replace(/\b([xX])\s*-\s+(\d+[xX])/g, '$1^2 - $2');
-        //    Pola "X- 5x" sudah tercakup.
-        
-        // 4. Hati-hati: jangan ubah jika sudah ada pangkat (x^2 - 5x) tetap
-        //    tidak akan terkena karena regex membutuhkan huruf langsung diikuti minus.
-        
-        // 5. Jika ditemukan "x - 5x" tetapi spasi, kita ubah juga dengan pola lebih longgar
         result = result.replace(/\b([xX])\s+-\s+(\d+[xX])/g, '$1^2 - $2');
-        
-        // 6. Bersihkan spasi berlebih
-        result = result.replace(/\s+/g, ' ').trim();
-        return result;
+        return result.trim();
     }
 
     // ========== OCR VIA BACKEND ==========
@@ -537,7 +596,6 @@ ATURAN KETAT:
             appendChat('system-info', '📸 Gambar dikompres. Kirim ke server OCR...');
             
             let extractedText = await extractTextWithOcrSpace(compressedFile);
-            // Normalisasi teks
             extractedText = normalizeMathNotation(extractedText);
             
             const cleanText = extractedText.replace(/[^a-zA-Z0-9+\-*/^=()xX\s]/g, '');
@@ -570,7 +628,6 @@ ATURAN KETAT:
         let message = userInput.value.trim();
         if (!message || isLoading) return;
         
-        // Normalisasi juga pesan manual
         message = normalizeMathNotation(message);
         
         isLoading = true;
@@ -668,7 +725,7 @@ ATURAN KETAT:
     document.getElementById('refreshReportBtn').addEventListener('click', loadParentReport);
     document.getElementById('waSimulateBtn').addEventListener('click', simulateWhatsApp);
     switchMode('siswa');
-    console.log('✅ MindSeek-edu siap: kompresi + normalisasi lanjutan + prompt disiplin');
+    console.log('✅ MindSeek-edu siap: kompresi gambar + normalisasi notasi + prompt Ai Mi final');
 </script>
 </body>
 </html>
