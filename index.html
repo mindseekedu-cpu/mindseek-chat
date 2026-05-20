@@ -11,14 +11,12 @@
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
-
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', sans-serif;
             background: #eef5fc;
             color: #1e2f3e;
             line-height: 1.4;
         }
-
         .header {
             background: linear-gradient(135deg, #0b5e7e, #0288d1);
             color: white;
@@ -33,11 +31,7 @@
             gap: 12px;
             flex-wrap: wrap;
         }
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .logo-area { display: flex; align-items: center; gap: 12px; }
         .logo-circle {
             width: 50px;
             height: 50px;
@@ -48,9 +42,6 @@
             justify-content: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             transition: transform 0.2s ease;
-        }
-        .logo-circle:hover {
-            transform: scale(1.02);
         }
         .logo-circle span {
             font-size: 28px;
@@ -179,7 +170,7 @@
             background: white;
             min-height: 48px;
         }
-        .input-row button, .upload-label {
+        .input-row button, .upload-label, .manual-label {
             background: #0288d1;
             color: white;
             border: none;
@@ -201,7 +192,10 @@
         .upload-label:hover {
             background: #ec971f;
         }
-        .input-row button:disabled, .upload-label.disabled {
+        .manual-label {
+            background: #6c757d;
+        }
+        .input-row button:disabled, .upload-label.disabled, .manual-label.disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
@@ -283,66 +277,34 @@
         .hidden {
             display: none;
         }
-
         @media (max-width: 600px) {
-            .container {
-                padding: 12px;
-            }
-            .msg {
-                max-width: 90%;
-                font-size: 0.9rem;
-            }
-            .logo-circle {
-                width: 42px;
-                height: 42px;
-            }
-            .logo-circle span {
-                font-size: 22px;
-            }
-            .logo-text h1 {
-                font-size: 1.2rem;
-            }
-            .tagline {
-                font-size: 0.6rem;
-            }
-            .mode-btn {
-                padding: 6px 12px;
-                font-size: 0.75rem;
-            }
-            .chat-box {
-                height: 55vh;
-            }
+            .container { padding: 12px; }
+            .msg { max-width: 90%; font-size: 0.9rem; }
+            .logo-circle { width: 42px; height: 42px; }
+            .logo-circle span { font-size: 22px; }
+            .logo-text h1 { font-size: 1.2rem; }
+            .tagline { font-size: 0.6rem; }
+            .mode-btn { padding: 6px 12px; font-size: 0.75rem; }
+            .chat-box { height: 55vh; }
             .input-row {
                 flex-direction: column;
                 align-items: stretch;
                 gap: 12px;
             }
-            .input-row input {
-                width: 100%;
-                text-align: left;
-                font-size: 0.95rem;
-            }
-            .input-row button, .upload-label {
+            .input-row input, .input-row button, .upload-label, .manual-label {
                 width: 100%;
                 padding: 14px;
                 white-space: normal;
             }
         }
     </style>
-    <!-- Tesseract.js untuk OCR -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 
 <div class="header">
     <div class="logo-area">
-        <div class="logo-circle">
-            <span>MS</span>
-        </div>
-        <div class="logo-text">
-            <h1>MindSeek</h1>
-            <div class="tagline">Explore. Understand. Achieve.</div>
-        </div>
+        <div class="logo-circle"><span>MS</span></div>
+        <div class="logo-text"><h1>MindSeek</h1><div class="tagline">Explore. Understand. Achieve.</div></div>
     </div>
     <div class="mode-toggle">
         <button class="mode-btn active" data-mode="siswa">Siswa</button>
@@ -374,52 +336,32 @@
         <input type="file" id="fileInput" accept="image/*" style="display:none;">
         <button id="sendBtn">Kirim</button>
     </div>
+    <div id="manualInputContainer" style="display: none; margin-top: 12px;"></div>
 </div>
 
 <!-- MODE ORANG TUA -->
 <div class="container hidden" id="parentView">
-    <div id="pinSection">
-        <div class="pin-section">
-            <h2 style="color:#0288d1;">🔒 Akses Orang Tua</h2>
-            <p style="margin:10px 0">Masukkan PIN untuk melihat laporan belajar anak</p>
-            <input type="password" id="pinInput" maxlength="4" placeholder="1234" inputmode="numeric">
-            <button id="pinLoginBtn">Masuk</button>
-        </div>
-    </div>
-    <div id="reportSection" class="hidden">
-        <div class="report-card">
-            <div class="flex-between">
-                <h3>📊 Ringkasan Belajar</h3>
-                <button id="refreshReportBtn" class="refresh-btn">↻ Refresh</button>
-            </div>
-            <div id="reportSummary">Memuat data...</div>
-        </div>
-        <div class="report-card">
-            <h3>💬 Riwayat Chat (20 terbaru)</h3>
-            <div id="chatHistory">Memuat...</div>
-        </div>
-        <button id="waSimulateBtn" class="wa-btn">📱 Kirim Laporan ke WhatsApp (Simulasi)</button>
-        <p style="font-size:12px; text-align:center; margin-top:12px;">*Integrasi nyata: ganti dengan API WhatsApp Business</p>
-    </div>
+    <div id="pinSection"><div class="pin-section"><h2 style="color:#0288d1;">🔒 Akses Orang Tua</h2><p style="margin:10px 0">Masukkan PIN untuk melihat laporan belajar anak</p><input type="password" id="pinInput" maxlength="4" placeholder="1234" inputmode="numeric"><button id="pinLoginBtn">Masuk</button></div></div>
+    <div id="reportSection" class="hidden"><div class="report-card"><div class="flex-between"><h3>📊 Ringkasan Belajar</h3><button id="refreshReportBtn" class="refresh-btn">↻ Refresh</button></div><div id="reportSummary">Memuat data...</div></div><div class="report-card"><h3>💬 Riwayat Chat (20 terbaru)</h3><div id="chatHistory">Memuat...</div></div><button id="waSimulateBtn" class="wa-btn">📱 Kirim Laporan ke WhatsApp (Simulasi)</button><p style="font-size:12px; text-align:center; margin-top:12px;">*Integrasi nyata: ganti dengan API WhatsApp Business</p></div>
 </div>
 
 <script>
     // =========================================================
-    // 🛡️ VERSI AMAN: Semua kredensial sudah dipindah ke backend Vercel.
-    //    Frontend hanya memanggil endpoint /api/chat, /api/save-chat, /api/report
+    // 🛡️ KONFIGURASI - Semua kredensial di backend Vercel
     // =========================================================
-    const USER_ID = 'siswa_001';   // static untuk demo
+    const USER_ID = 'siswa_001';
 
-    // SYSTEM PROMPT (boleh tetap di frontend karena bukan rahasia)
-    const SYSTEM_PROMPT = `Kamu adalah Ai Mi (彭爱米), guru virtual yang sabar, lembut, dan penuh kasih sayang, khusus untuk Matematika tingkat A level (advanced).
+    // SYSTEM PROMPT (tanpa markdown, satu pesan satu langkah)
+    const SYSTEM_PROMPT = `Kamu adalah Ai Mi (彭爱米), guru virtual yang sabar, lembut, dan penuh kasih sayang, khusus untuk Matematika tingkat A level.
 Kepribadian:
-- Awali setiap jawaban dengan sapaan hangat, misal: "Hi, Ai Mi di sini~ 💕"
-- Gunakan bahasa Indonesia yang menenangkan, penuh empati, dan mudah dipahami.
+- Awali setiap jawaban dengan sapaan hangat, contoh: "Hi, Ai Mi di sini~ 💕"
+- Gunakan bahasa Indonesia yang baik, menenangkan, penuh empati, dan mudah dipahami.
 - JANGAN PERNAH memberikan jawaban akhir secara langsung. Berikan petunjuk, rumus, langkah-langkah, analogi, atau contoh serupa.
+- JANGAN gunakan simbol markdown seperti *, **, _, atau [] untuk membuat teks miring/tebal. Gunakan emoji atau tanda kutip biasa untuk penekanan.
+- Tulis rumus dengan cara sederhana: x² - 5x + 6 = 0 (jangan gunakan \[ \] atau $$).
+- Setiap langkah penjelasan harus dalam pesan yang terpisah. Jangan gabungkan Langkah 1 dan Langkah 2 dalam satu pesan.
 - Jika siswa mengirim pesan yang diawali dengan "Ini soal PR saya", maka kamu WAJIB membimbing step-by-step tanpa memberi jawaban.
-- Setelah memberikan bimbingan, akhiri dengan SATU soal latihan yang relevan.
-- Jika siswa menjawab dengan benar, puji dengan tulus.
-- Jika salah, bimbing lembut tanpa mengkritik.
+- Jika siswa salah, bimbing dengan lembut, jangan mengkritik.
 - Selingi dengan emoji 🌸, 💕, 🌟, 📚.`;
 
     // STATE
@@ -437,21 +379,27 @@ Kepribadian:
     const fileInput = document.getElementById('fileInput');
     const uploadLabel = document.getElementById('uploadLabel');
 
+    // Helper: escape HTML
     function escapeHtml(str) {
         if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
+    }
+
+    // Render markdown sederhana
+    function renderMarkdown(text) {
+        let safe = escapeHtml(text);
+        safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        safe = safe.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        safe = safe.replace(/\n/g, '<br>');
+        return safe;
     }
 
     function appendChat(role, text, isSystem = false) {
         const div = document.createElement('div');
         div.className = `msg ${role}`;
         if (isSystem) div.classList.add('system-info');
-        div.textContent = text;
+        if (role === 'ai') div.innerHTML = renderMarkdown(text);
+        else div.textContent = text;
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
@@ -465,33 +413,50 @@ Kepribadian:
         chatBox.appendChild(loadingDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
-    function hideLoading() {
-        if (loadingDiv) {
-            loadingDiv.remove();
-            loadingDiv = null;
-        }
-    }
+    function hideLoading() { if (loadingDiv) { loadingDiv.remove(); loadingDiv = null; } }
 
-    // ========== OCR dengan Tesseract.js ==========
-    async function extractTextFromImage(file) {
+    // ========== INTEGRASI OCR.space via BACKEND PROXY ==========
+    async function extractTextWithOcrSpace(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = async function(e) {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = async function() {
-                    try {
-                        // Gunakan bahasa Indonesia (ind)
-                        const result = await Tesseract.recognize(img, 'ind', {
-                            logger: m => console.log(m) // opsional
-                        });
-                        resolve(result.data.text);
-                    } catch (err) {
-                        reject(err);
+                const base64 = e.target.result;
+                try {
+                    const response = await fetch('/api/ocr', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageBase64: base64 })
+                    });
+                    const data = await response.json();
+                    if (!response.ok) {
+                        reject(new Error(data.error || 'OCR gagal'));
+                        return;
                     }
-                };
+                    if (!data.text || data.text.trim().length < 5) {
+                        reject(new Error('Teks tidak terbaca'));
+                        return;
+                    }
+                    resolve(data.text);
+                } catch (err) {
+                    reject(err);
+                }
             };
+            reader.onerror = reject;
             reader.readAsDataURL(file);
+        });
+    }
+
+    // Tombol manual jika OCR gagal
+    function showManualInputButton() {
+        const manualContainer = document.getElementById('manualInputContainer');
+        manualContainer.innerHTML = `
+            <button id="manualTriggerBtn" class="manual-label" style="margin-top:8px;">✍️ Tidak bisa? Tulis Soal Manual</button>
+        `;
+        manualContainer.style.display = 'block';
+        document.getElementById('manualTriggerBtn')?.addEventListener('click', () => {
+            userInput.value = '✍️ [Tulis soal matematika kamu di sini, contoh: x^2 - 5x + 6 = 0]';
+            userInput.focus();
+            manualContainer.style.display = 'none';
         });
     }
 
@@ -500,80 +465,70 @@ Kepribadian:
         const file = event.target.files[0];
         if (!file) return;
         if (isLoading) {
-            appendChat('system-info', '⏳ Tunggu sebentar, Ai Mi masih menjawab pertanyaan sebelumnya.');
+            appendChat('system-info', '⏳ Tunggu sebentar, Ai Mi masih menjawab. Upload setelah selesai ya.');
             fileInput.value = '';
             return;
         }
-        
+
         uploadLabel.classList.add('disabled');
-        appendChat('system-info', '📸 Sedang membaca soal dari gambar... Harap tunggu sebentar.');
-        
+        appendChat('system-info', '📸 Mengirim gambar ke server OCR... Mohon tunggu sebentar (maks 15 detik).');
+
         try {
-            const extractedText = await extractTextFromImage(file);
-            if (!extractedText || extractedText.trim().length < 5) {
-                appendChat('system-info', '⚠️ Tidak dapat membaca teks dari gambar dengan jelas. Coba foto yang lebih terang, rapi, atau tulis manual.');
+            const extractedText = await extractTextWithOcrSpace(file);
+            const cleanText = extractedText.replace(/[^a-zA-Z0-9+\-*/^=()xX\s]/g, '');
+            if (cleanText.length < 10) {
+                appendChat('system-info', '⚠️ Teks soal tidak terbaca dengan jelas. Silakan tulis soal secara manual.');
+                showManualInputButton();
                 uploadLabel.classList.remove('disabled');
                 fileInput.value = '';
                 return;
             }
-            
-            // Tampilkan teks hasil OCR (agar user tahu apa yang terbaca)
+
             const shortText = extractedText.substring(0, 300);
             appendChat('system-info', `📖 Teks yang terbaca:\n${shortText}${extractedText.length > 300 ? '...' : ''}`);
-            
-            // Kirim sebagai pesan ke Ai Mi dengan instruksi khusus
+
             const questionMessage = `Ini soal PR saya. Tolong bimbing saya step-by-step tanpa memberikan jawaban langsung. Soalnya:\n\n${extractedText}`;
             userInput.value = questionMessage;
-            // Otomatis kirim
-            await sendMessage(true); // true = skip double trigger
+            await sendMessage(true);
         } catch (err) {
             console.error('OCR error:', err);
-            appendChat('system-info', '💥 Gagal membaca gambar. Coba lagi dengan foto yang lebih jelas.');
+            appendChat('system-info', `💥 Gagal membaca gambar: ${err.message}. Coba foto yang lebih jelas atau tulis manual.`);
+            showManualInputButton();
         } finally {
             uploadLabel.classList.remove('disabled');
             fileInput.value = '';
         }
     });
 
-    // ========== Kirim Pesan ==========
+    // ========== KIRIM PESAN KE AI ==========
     async function sendMessage(skipClear = false) {
         const message = userInput.value.trim();
         if (!message || isLoading) return;
-
         isLoading = true;
         sendBtn.disabled = true;
         userInput.disabled = true;
         uploadLabel.style.pointerEvents = 'none';
-
         appendChat('user', message);
         chatMessages.push({ role: 'user', content: message });
         if (!skipClear) userInput.value = '';
-
         showLoading();
-
         try {
-            // Panggil backend chat proxy
             const chatResponse = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ messages: chatMessages })
             });
-
             const chatData = await chatResponse.json();
             hideLoading();
-
             if (!chatResponse.ok) {
                 const errorMsg = chatData.error || 'Ai Mi sedang kelelahan. Coba lagi nanti ya.';
                 appendChat('ai', `💕 Maaf, ${errorMsg}`);
                 chatMessages.push({ role: 'assistant', content: errorMsg });
                 return;
             }
-
             const aiReply = chatData.reply || 'Maaf, Ai Mi tidak bisa menjawab saat ini.';
             appendChat('ai', aiReply);
             chatMessages.push({ role: 'assistant', content: aiReply });
-
-            // Simpan ke Supabase via backend
             const currentSubject = subjectSelect.value;
             await fetch('/api/save-chat', {
                 method: 'POST',
@@ -585,7 +540,6 @@ Kepribadian:
                     subject: currentSubject
                 })
             });
-
         } catch (err) {
             hideLoading();
             console.error(err);
@@ -599,24 +553,21 @@ Kepribadian:
         }
     }
 
-    // ========== Laporan Orang Tua ==========
+    // ========== LAPORAN ORANG TUA ==========
     async function loadParentReport() {
         const summaryDiv = document.getElementById('reportSummary');
         const historyDiv = document.getElementById('chatHistory');
         summaryDiv.innerHTML = 'Mengambil data...';
         historyDiv.innerHTML = 'Memuat...';
-
         try {
             const response = await fetch(`/api/report?user_id=${USER_ID}`);
             if (!response.ok) throw new Error('Gagal mengambil data');
             const data = await response.json();
-
             if (!data.chats || data.chats.length === 0) {
                 summaryDiv.innerHTML = 'Belum ada percakapan. Ayo ajak anak belajar dengan Ai Mi!';
                 historyDiv.innerHTML = '<div class="chat-history-item">Kosong.</div>';
                 return;
             }
-
             const chats = data.chats;
             let totalMessages = chats.length;
             let subjectCount = {};
@@ -626,25 +577,10 @@ Kepribadian:
                 subjectCount[subj] = (subjectCount[subj] || 0) + 1;
             }
             let topSubject = Object.entries(subjectCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'Matematika A level';
-
-            summaryDiv.innerHTML = `
-                <p>📌 <strong>Total percakapan:</strong> ${totalMessages} pesan</p>
-                <p>📚 <strong>Mata pelajaran favorit:</strong> ${topSubject}</p>
-                <p>🕒 <strong>Terakhir aktif:</strong> ${lastActive}</p>
-                <p>🌟 <strong>Guru virtual Ai Mi</strong> selalu membimbing tanpa memberi jawaban instan. Selamat belajar!</p>
-            `;
-
+            summaryDiv.innerHTML = `<p>📌 <strong>Total percakapan:</strong> ${totalMessages} pesan</p><p>📚 <strong>Mata pelajaran favorit:</strong> ${topSubject}</p><p>🕒 <strong>Terakhir aktif:</strong> ${lastActive}</p><p>🌟 <strong>Guru virtual Ai Mi</strong> selalu membimbing tanpa memberi jawaban instan. Selamat belajar!</p>`;
             const recent = chats.slice(0, 20);
-            historyDiv.innerHTML = recent.map(c => `
-                <div class="chat-history-item">
-                    <div><strong>🧑‍🎓 Siswa:</strong> ${escapeHtml(c.user_message?.substring(0, 150) || '')}</div>
-                    <div><strong>🤖 Ai Mi:</strong> ${escapeHtml(c.ai_message?.substring(0, 120) || '')}...</div>
-                    <div style="font-size:0.7rem; color:#6c8ea0;">📅 ${new Date(c.timestamp).toLocaleString('id-ID')} · ${c.subject}</div>
-                </div>
-            `).join('');
-            if (chats.length > 20) {
-                historyDiv.innerHTML += `<div class="chat-history-item">... dan ${chats.length - 20} lainnya</div>`;
-            }
+            historyDiv.innerHTML = recent.map(c => `<div class="chat-history-item"><div><strong>🧑‍🎓 Siswa:</strong> ${escapeHtml(c.user_message?.substring(0, 150) || '')}</div><div><strong>🤖 Ai Mi:</strong> ${escapeHtml(c.ai_message?.substring(0, 120) || '')}...</div><div style="font-size:0.7rem; color:#6c8ea0;">📅 ${new Date(c.timestamp).toLocaleString('id-ID')} · ${c.subject}</div></div>`).join('');
+            if (chats.length > 20) historyDiv.innerHTML += `<div class="chat-history-item">... dan ${chats.length - 20} lainnya</div>`;
         } catch (err) {
             console.error(err);
             summaryDiv.innerHTML = 'Gagal memuat laporan. Pastikan backend /api/report sudah dibuat.';
@@ -652,68 +588,18 @@ Kepribadian:
         }
     }
 
-    function loginParent(pin) {
-        if (pin === '1234') {
-            isParentLogged = true;
-            document.getElementById('pinSection').classList.add('hidden');
-            document.getElementById('reportSection').classList.remove('hidden');
-            loadParentReport();
-        } else {
-            alert('PIN salah! Gunakan: 1234');
-        }
-    }
+    function loginParent(pin) { if (pin === '1234') { isParentLogged = true; document.getElementById('pinSection').classList.add('hidden'); document.getElementById('reportSection').classList.remove('hidden'); loadParentReport(); } else { alert('PIN salah! Gunakan: 1234'); } }
+    function simulateWhatsApp() { const summaryText = document.getElementById('reportSummary').innerText || 'Laporan belajar anak'; const message = `📊 *Laporan Belajar MindSeek-edu*\n\n${summaryText}\n\n✅ Anak Anda belajar dengan Ai Mi hari ini. Terus dukung semangat belajarnya! 🌸`; alert(`📱 SIMULASI KIRIM WA\n\n${message}\n\n(Integrasi nyata: buka window.open ke https://wa.me/62... )`); }
+    function switchMode(mode) { currentMode = mode; if (mode === 'siswa') { studentView.classList.remove('hidden'); parentView.classList.add('hidden'); } else { studentView.classList.add('hidden'); parentView.classList.remove('hidden'); if (!isParentLogged) { document.getElementById('pinSection').classList.remove('hidden'); document.getElementById('reportSection').classList.add('hidden'); } else { document.getElementById('pinSection').classList.add('hidden'); document.getElementById('reportSection').classList.remove('hidden'); loadParentReport(); } } document.querySelectorAll('.mode-btn').forEach(btn => { if (btn.getAttribute('data-mode') === mode) btn.classList.add('active'); else btn.classList.remove('active'); }); }
 
-    function simulateWhatsApp() {
-        const summaryText = document.getElementById('reportSummary').innerText || 'Laporan belajar anak';
-        const message = `📊 *Laporan Belajar MindSeek-edu*\n\n${summaryText}\n\n✅ Anak Anda belajar dengan Ai Mi hari ini. Terus dukung semangat belajarnya! 🌸`;
-        alert(`📱 SIMULASI KIRIM WA\n\n${message}\n\n(Integrasi nyata: buka window.open ke https://wa.me/62... )`);
-    }
-
-    function switchMode(mode) {
-        currentMode = mode;
-        if (mode === 'siswa') {
-            studentView.classList.remove('hidden');
-            parentView.classList.add('hidden');
-        } else {
-            studentView.classList.add('hidden');
-            parentView.classList.remove('hidden');
-            if (!isParentLogged) {
-                document.getElementById('pinSection').classList.remove('hidden');
-                document.getElementById('reportSection').classList.add('hidden');
-            } else {
-                document.getElementById('pinSection').classList.add('hidden');
-                document.getElementById('reportSection').classList.remove('hidden');
-                loadParentReport();
-            }
-        }
-        document.querySelectorAll('.mode-btn').forEach(btn => {
-            if (btn.getAttribute('data-mode') === mode) btn.classList.add('active');
-            else btn.classList.remove('active');
-        });
-    }
-
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const mode = btn.getAttribute('data-mode');
-            switchMode(mode);
-        });
-    });
-
+    document.querySelectorAll('.mode-btn').forEach(btn => { btn.addEventListener('click', (e) => { const mode = btn.getAttribute('data-mode'); switchMode(mode); }); });
     sendBtn.addEventListener('click', () => sendMessage());
-    userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !isLoading) sendMessage();
-    });
-
-    document.getElementById('pinLoginBtn').addEventListener('click', () => {
-        const pin = document.getElementById('pinInput').value;
-        loginParent(pin);
-    });
+    userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !isLoading) sendMessage(); });
+    document.getElementById('pinLoginBtn').addEventListener('click', () => { const pin = document.getElementById('pinInput').value; loginParent(pin); });
     document.getElementById('refreshReportBtn').addEventListener('click', loadParentReport);
     document.getElementById('waSimulateBtn').addEventListener('click', simulateWhatsApp);
-
     switchMode('siswa');
-
-    console.log('✨ MindSeek-edu aman! Fitur Upload PR + OCR siap digunakan.');
+    console.log('✨ MindSeek-edu OCR.space siap (API key aman di backend)');
 </script>
 </body>
 </html>
