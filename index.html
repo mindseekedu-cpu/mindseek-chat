@@ -100,8 +100,8 @@
         .chat-box {
             background: white;
             border-radius: 24px;
-            height: 60vh;
-            min-height: 380px;
+            height: 55vh;
+            min-height: 350px;
             overflow-y: auto;
             padding: 16px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -147,13 +147,12 @@
             align-self: flex-start;
             font-size: 0.85rem;
         }
+        /* Input row: hanya input teks, full width */
         .input-row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
+            margin-bottom: 12px;
         }
         .input-row input {
-            flex: 1;
+            width: 100%;
             padding: 14px 16px;
             border-radius: 48px;
             border: 1px solid #bcdff0;
@@ -161,34 +160,65 @@
             background: white;
             min-height: 48px;
         }
-        .input-row button, .upload-label, .manual-label {
+        /* Button row: 4 tombol sejajar dengan flex-wrap */
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: stretch;
+        }
+        .button-row button, .button-row label {
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
             background: #0288d1;
             color: white;
             border: none;
-            padding: 0 24px;
+            padding: 12px 0;
             border-radius: 48px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
             min-height: 48px;
-            white-space: nowrap;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 6px;
         }
         .upload-label {
-            background: #f0ad4e;
+            background: #f0ad4e !important;
         }
         .upload-label:hover {
-            background: #ec971f;
+            background: #ec971f !important;
+        }
+        .clear-input-btn {
+            background: #6c757d !important;
+        }
+        .clear-input-btn:hover {
+            background: #5a6268 !important;
+        }
+        .clear-history-btn {
+            background: #dc2626 !important;
+        }
+        .clear-history-btn:hover {
+            background: #b91c1c !important;
+        }
+        .send-btn {
+            background: #0288d1 !important;
+        }
+        .button-row button:disabled, .button-row label.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         .manual-label {
             background: #6c757d;
-        }
-        .input-row button:disabled, .upload-label.disabled, .manual-label.disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+            margin-top: 8px;
+            width: 100%;
+            text-align: center;
+            padding: 12px;
+            border-radius: 48px;
+            cursor: pointer;
         }
         .pin-section {
             text-align: center;
@@ -268,6 +298,7 @@
         .hidden {
             display: none;
         }
+        /* Responsif HP: tombol bisa menjadi 2 baris atau vertikal */
         @media (max-width: 600px) {
             .container { padding: 12px; }
             .msg { max-width: 90%; font-size: 0.9rem; }
@@ -276,16 +307,10 @@
             .logo-text h1 { font-size: 1.2rem; }
             .tagline { font-size: 0.6rem; }
             .mode-btn { padding: 6px 12px; font-size: 0.75rem; }
-            .chat-box { height: 55vh; }
-            .input-row {
+            .chat-box { height: 50vh; }
+            /* Jika ingin tombol vertikal di HP, ubah flex-direction, tapi biarkan wrap dulu */
+            .button-row {
                 flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-            }
-            .input-row input, .input-row button, .upload-label, .manual-label {
-                width: 100%;
-                padding: 14px;
-                white-space: normal;
             }
         }
     </style>
@@ -321,11 +346,17 @@
     <div class="chat-box" id="chatBox">
         <div class="msg system-info">🌸 Hi! Aku Ai Mi (彭爱米), guru virtual yang sabar. Ayo belajar matematika A level bersama! 🌸</div>
     </div>
+    <!-- Input baris pertama: hanya input teks -->
     <div class="input-row">
         <input type="text" id="userInput" placeholder="Tanya Ai Mi atau upload PR..." autocomplete="off">
+    </div>
+    <!-- Tombol baris kedua: 4 tombol sejajar -->
+    <div class="button-row">
+        <button id="sendBtn" class="send-btn">📩 Kirim</button>
         <label for="fileInput" class="upload-label" id="uploadLabel">📤 Upload PR</label>
         <input type="file" id="fileInput" accept="image/*" style="display:none;">
-        <button id="sendBtn">Kirim</button>
+        <button id="clearInputBtn" class="clear-input-btn">🗑️ Clear Input</button>
+        <button id="clearHistoryBtn" class="clear-history-btn">🗑️ Clear History</button>
     </div>
     <div id="manualInputContainer" style="display: none; margin-top: 12px;"></div>
 </div>
@@ -455,6 +486,8 @@ Ingat, Ai Mi: Kamu adalah pemandu yang sabar, bukan tukang kasih jawaban. Setiap
     const subjectSelect = document.getElementById('subjectSelect');
     const fileInput = document.getElementById('fileInput');
     const uploadLabel = document.getElementById('uploadLabel');
+    const clearInputBtn = document.getElementById('clearInputBtn');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
     function escapeHtml(str) {
         if (!str) return '';
@@ -490,6 +523,24 @@ Ingat, Ai Mi: Kamu adalah pemandu yang sabar, bukan tukang kasih jawaban. Setiap
     }
     function hideLoading() { if (loadingDiv) { loadingDiv.remove(); loadingDiv = null; } }
 
+    // Fungsi Clear Input: membersihkan kolom input
+    function clearInput() {
+        userInput.value = '';
+        userInput.focus();
+    }
+
+    // Fungsi Clear History: reset seluruh percakapan
+    function clearHistory() {
+        // Hapus semua pesan di chatBox kecuali pesan system pertama (sambutan Ai Mi)
+        while (chatBox.children.length > 1) {
+            chatBox.removeChild(chatBox.lastChild);
+        }
+        // Reset array chatMessages
+        chatMessages = [];
+        // Tambahkan notifikasi
+        appendChat('system-info', '🧹 Riwayat percakapan telah dibersihkan. Kamu bisa mulai belajar lagi ya! 🌸');
+    }
+
     // ========== KOMPRESI GAMBAR ==========
     async function compressImage(file, maxWidth = 1024, quality = 0.8) {
         return new Promise((resolve, reject) => {
@@ -524,11 +575,8 @@ Ingat, Ai Mi: Kamu adalah pemandu yang sabar, bukan tukang kasih jawaban. Setiap
     function normalizeMathNotation(text) {
         if (!text) return '';
         let result = text;
-        // Pangkat Unicode
         result = result.replace(/²/g, '^2').replace(/³/g, '^3');
-        // Huruf diikuti angka (x2 -> x^2)
         result = result.replace(/([a-zA-Z])(\d+)/g, '$1^$2');
-        // Perbaiki pola x-5x atau X-5x menjadi x^2-5x
         result = result.replace(/\b([xX])\s*-\s*(\d+[xX])/g, '$1^2 - $2');
         result = result.replace(/\b([xX])\s+-\s+(\d+[xX])/g, '$1^2 - $2');
         return result.trim();
@@ -610,7 +658,7 @@ Ingat, Ai Mi: Kamu adalah pemandu yang sabar, bukan tukang kasih jawaban. Setiap
             const shortText = extractedText.substring(0, 300);
             appendChat('system-info', `📖 Teks terbaca (dinormalisasi):\n${shortText}${extractedText.length > 300 ? '...' : ''}`);
 
-            const questionMessage = `Ini soal PR saya. Tolong bimbing saya step-by-step tanpa memberikan jawaban langsung. Soalnya:\n\n${extractedText}`;
+            const questionMessage = `Soal:\n${extractedText}`;
             userInput.value = questionMessage;
             await sendMessage(true);
         } catch (err) {
@@ -724,8 +772,11 @@ Ingat, Ai Mi: Kamu adalah pemandu yang sabar, bukan tukang kasih jawaban. Setiap
     document.getElementById('pinLoginBtn').addEventListener('click', () => { const pin = document.getElementById('pinInput').value; loginParent(pin); });
     document.getElementById('refreshReportBtn').addEventListener('click', loadParentReport);
     document.getElementById('waSimulateBtn').addEventListener('click', simulateWhatsApp);
+    clearInputBtn.addEventListener('click', clearInput);
+    clearHistoryBtn.addEventListener('click', clearHistory);
+    
     switchMode('siswa');
-    console.log('✅ MindSeek-edu siap: kompresi gambar + normalisasi notasi + prompt Ai Mi final');
+    console.log('✅ MindSeek-edu siap: input teks + 4 tombol sejajar (Kirim, Upload PR, Clear Input, Clear History)');
 </script>
 </body>
 </html>
