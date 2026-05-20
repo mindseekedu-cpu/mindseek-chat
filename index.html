@@ -347,21 +347,20 @@
 
 <script>
     // =========================================================
-    // 🛡️ KONFIGURASI - Semua kredensial di backend Vercel
+    // 🛡️ KONFIGURASI
     // =========================================================
     const USER_ID = 'siswa_001';
 
-    // SYSTEM PROMPT (tanpa markdown, satu pesan satu langkah)
+    // SYSTEM PROMPT
     const SYSTEM_PROMPT = `Kamu adalah Ai Mi (彭爱米), guru virtual yang sabar, lembut, dan penuh kasih sayang, khusus untuk Matematika tingkat A level.
 Kepribadian:
 - Awali setiap jawaban dengan sapaan hangat, contoh: "Hi, Ai Mi di sini~ 💕"
 - Gunakan bahasa Indonesia yang baik, menenangkan, penuh empati, dan mudah dipahami.
 - JANGAN PERNAH memberikan jawaban akhir secara langsung. Berikan petunjuk, rumus, langkah-langkah, analogi, atau contoh serupa.
-- JANGAN gunakan simbol markdown seperti *, **, _, atau [] untuk membuat teks miring/tebal. Gunakan emoji atau tanda kutip biasa untuk penekanan.
+- JANGAN gunakan simbol markdown seperti *, **, _, atau [].
 - Tulis rumus dengan cara sederhana: x^2 - 5x + 6 = 0 (jangan gunakan \[ \] atau $$).
-- Setiap langkah penjelasan harus dalam pesan yang terpisah. Jangan gabungkan Langkah 1 dan Langkah 2 dalam satu pesan.
-- Jika siswa mengirim pesan yang diawali dengan "Ini soal PR saya", maka kamu WAJIB membimbing step-by-step tanpa memberi jawaban.
-- Jika siswa salah, bimbing dengan lembut, jangan mengkritik.
+- Setiap langkah penjelasan harus dalam pesan yang terpisah.
+- Jika siswa mengirim pesan yang diawali dengan "Ini soal PR saya", maka WAJIB membimbing step-by-step tanpa memberi jawaban.
 - Selingi dengan emoji 🌸, 💕, 🌟, 📚.`;
 
     // STATE
@@ -385,7 +384,6 @@ Kepribadian:
         return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
     }
 
-    // Render markdown sederhana
     function renderMarkdown(text) {
         let safe = escapeHtml(text);
         safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -415,7 +413,7 @@ Kepribadian:
     }
     function hideLoading() { if (loadingDiv) { loadingDiv.remove(); loadingDiv = null; } }
 
-    // ========== KOMPRESI GAMBAR SEBELUM OCR (SOLUSI HP) ==========
+    // ========== KOMPRESI GAMBAR ==========
     async function compressImage(file, maxWidth = 1024, quality = 0.8) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -445,8 +443,18 @@ Kepribadian:
         });
     }
 
-    
-    // ========== INTEGRASI OCR.space via BACKEND PROXY ==========
+    // ========== NORMALISASI NOTASI MATEMATIKA ==========
+    function normalizeMathNotation(text) {
+        if (!text) return '';
+        // 1. Ubah pangkat Unicode
+        let result = text.replace(/²/g, '^2').replace(/³/g, '^3');
+        // 2. Ubah huruf diikuti angka tanpa tanda ^ (misal x2 -> x^2), tetapi hati-hati dengan 2x (angka lalu huruf)
+        result = result.replace(/([a-zA-Z])(\d+)/g, '$1^$2');
+        // 3. Perbaiki kasus "x-5x" menjadi "x^2 - 5x" jika ada pola? Tidak, karena OCR bisa salah.
+        return result;
+    }
+
+    // ========== OCR VIA BACKEND ==========
     async function extractTextWithOcrSpace(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -477,11 +485,10 @@ Kepribadian:
         });
     }
 
-    // Tombol manual jika OCR gagal
     function showManualInputButton() {
         const manualContainer = document.getElementById('manualInputContainer');
         manualContainer.innerHTML = `
-            <button id="manualTriggerBtn" class="manual-label" style="margin-top:8px;">✍️ Tidak bisa? Tulis Soal Manual</button>
+            <button id="manualTriggerBtn" class="manual-label" style="margin-top:8px;">✍️ Tulis Soal Manual</button>
         `;
         manualContainer.style.display = 'block';
         document.getElementById('manualTriggerBtn')?.addEventListener('click', () => {
@@ -491,12 +498,12 @@ Kepribadian:
         });
     }
 
-    // Event upload file (dengan kompresi + normalisasi notasi)
+    // ========== EVENT UPLOAD ==========
     fileInput.addEventListener('change', async function(event) {
         const file = event.target.files[0];
         if (!file) return;
         if (isLoading) {
-            appendChat('system-info', '⏳ Tunggu sebentar, Ai Mi masih menjawab. Upload setelah selesai ya.');
+            appendChat('system-info', '⏳ Tunggu sebentar, Ai Mi masih menjawab.');
             fileInput.value = '';
             return;
         }
@@ -505,18 +512,23 @@ Kepribadian:
         appendChat('system-info', '📸 Memproses gambar... (kompresi & OCR)');
 
         try {
-            // KOMPRESI GAMBAR
             const compressedFile = await compressImage(file, 1024, 0.8);
-            appendChat('system-info', '📸 Gambar sudah dikompres. Mengirim ke server OCR... (maks 15 detik)');
+            appendChat('system-info', '📸 Gambar dikompres. Mengirim ke server OCR...');
             
             let extractedText = await extractTextWithOcrSpace(compressedFile);
             
-            // NORMALISASI NOTASI MATEMATIKA
-            extractedText = normalizeMathNotation(extractedText);
+            // Pastikan fungsi normalisasi ada
+            if (typeof normalizeMathNotation === 'function') {
+                extractedText = normalizeMathNotation(extractedText);
+            } else {
+                console.warn('normalizeMathNotation tidak ditemukan, gunakan fallback');
+                // fallback sederhana
+                extractedText = extractedText.replace(/²/g, '^2').replace(/³/g, '^3');
+            }
             
             const cleanText = extractedText.replace(/[^a-zA-Z0-9+\-*/^=()xX\s]/g, '');
             if (cleanText.length < 10) {
-                appendChat('system-info', '⚠️ Teks soal tidak terbaca dengan jelas. Silakan tulis soal secara manual.');
+                appendChat('system-info', '⚠️ Teks soal tidak terbaca jelas. Silakan tulis manual.');
                 showManualInputButton();
                 uploadLabel.classList.remove('disabled');
                 fileInput.value = '';
@@ -524,14 +536,14 @@ Kepribadian:
             }
 
             const shortText = extractedText.substring(0, 300);
-            appendChat('system-info', `📖 Teks yang terbaca (notasi sudah dinormalisasi):\n${shortText}${extractedText.length > 300 ? '...' : ''}`);
+            appendChat('system-info', `📖 Teks terbaca (dinormalisasi):\n${shortText}${extractedText.length > 300 ? '...' : ''}`);
 
             const questionMessage = `Ini soal PR saya. Tolong bimbing saya step-by-step tanpa memberikan jawaban langsung. Soalnya:\n\n${extractedText}`;
             userInput.value = questionMessage;
             await sendMessage(true);
         } catch (err) {
             console.error('OCR error:', err);
-            appendChat('system-info', `💥 Gagal membaca gambar: ${err.message}. Coba foto yang lebih jelas atau tulis manual.`);
+            appendChat('system-info', `💥 Gagal: ${err.message}. Coba foto jelas atau tulis manual.`);
             showManualInputButton();
         } finally {
             uploadLabel.classList.remove('disabled');
@@ -539,13 +551,14 @@ Kepribadian:
         }
     });
 
-    // ========== KIRIM PESAN KE AI ==========
+    // ========== KIRIM PESAN ==========
     async function sendMessage(skipClear = false) {
         let message = userInput.value.trim();
         if (!message || isLoading) return;
         
-        // Normalisasi notasi juga untuk pesan manual (opsional)
-        message = normalizeMathNotation(message);
+        if (typeof normalizeMathNotation === 'function') {
+            message = normalizeMathNotation(message);
+        }
         
         isLoading = true;
         sendBtn.disabled = true;
@@ -564,12 +577,12 @@ Kepribadian:
             const chatData = await chatResponse.json();
             hideLoading();
             if (!chatResponse.ok) {
-                const errorMsg = chatData.error || 'Ai Mi sedang kelelahan. Coba lagi nanti ya.';
+                const errorMsg = chatData.error || 'Ai Mi sedang kelelahan.';
                 appendChat('ai', `💕 Maaf, ${errorMsg}`);
                 chatMessages.push({ role: 'assistant', content: errorMsg });
                 return;
             }
-            const aiReply = chatData.reply || 'Maaf, Ai Mi tidak bisa menjawab saat ini.';
+            const aiReply = chatData.reply || 'Maaf, Ai Mi tidak bisa menjawab.';
             appendChat('ai', aiReply);
             chatMessages.push({ role: 'assistant', content: aiReply });
             const currentSubject = subjectSelect.value;
@@ -586,7 +599,7 @@ Kepribadian:
         } catch (err) {
             hideLoading();
             console.error(err);
-            appendChat('ai', '💕 Maaf, terjadi gangguan jaringan. Coba lagi sebentar ya. Ai Mi tunggu lho~');
+            appendChat('ai', '💕 Gangguan jaringan. Coba lagi.');
         } finally {
             isLoading = false;
             sendBtn.disabled = false;
@@ -620,7 +633,7 @@ Kepribadian:
                 subjectCount[subj] = (subjectCount[subj] || 0) + 1;
             }
             let topSubject = Object.entries(subjectCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'Matematika A level';
-            summaryDiv.innerHTML = `<p>📌 <strong>Total percakapan:</strong> ${totalMessages} pesan</p><p>📚 <strong>Mata pelajaran favorit:</strong> ${topSubject}</p><p>🕒 <strong>Terakhir aktif:</strong> ${lastActive}</p><p>🌟 <strong>Guru virtual Ai Mi</strong> selalu membimbing tanpa memberi jawaban instan. Selamat belajar!</p>`;
+            summaryDiv.innerHTML = `<p>📌 <strong>Total percakapan:</strong> ${totalMessages} pesan</p><p>📚 <strong>Pelajaran favorit:</strong> ${topSubject}</p><p>🕒 <strong>Terakhir aktif:</strong> ${lastActive}</p><p>🌟 <strong>Guru Ai Mi</strong> selalu membimbing tanpa jawaban instan.</p>`;
             const recent = chats.slice(0, 20);
             historyDiv.innerHTML = recent.map(c => `<div class="chat-history-item"><div><strong>🧑‍🎓 Siswa:</strong> ${escapeHtml(c.user_message?.substring(0, 150) || '')}</div><div><strong>🤖 Ai Mi:</strong> ${escapeHtml(c.ai_message?.substring(0, 120) || '')}...</div><div style="font-size:0.7rem; color:#6c8ea0;">📅 ${new Date(c.timestamp).toLocaleString('id-ID')} · ${c.subject}</div></div>`).join('');
             if (chats.length > 20) historyDiv.innerHTML += `<div class="chat-history-item">... dan ${chats.length - 20} lainnya</div>`;
@@ -632,7 +645,7 @@ Kepribadian:
     }
 
     function loginParent(pin) { if (pin === '1234') { isParentLogged = true; document.getElementById('pinSection').classList.add('hidden'); document.getElementById('reportSection').classList.remove('hidden'); loadParentReport(); } else { alert('PIN salah! Gunakan: 1234'); } }
-    function simulateWhatsApp() { const summaryText = document.getElementById('reportSummary').innerText || 'Laporan belajar anak'; const message = `📊 *Laporan Belajar MindSeek-edu*\n\n${summaryText}\n\n✅ Anak Anda belajar dengan Ai Mi hari ini. Terus dukung semangat belajarnya! 🌸`; alert(`📱 SIMULASI KIRIM WA\n\n${message}\n\n(Integrasi nyata: buka window.open ke https://wa.me/62... )`); }
+    function simulateWhatsApp() { const summaryText = document.getElementById('reportSummary').innerText || 'Laporan belajar anak'; const message = `📊 *Laporan Harian MindSeek-edu*\n\n${summaryText}\n\n✅ Terus dukung semangat belajarnya! 🌸`; alert(`📱 SIMULASI KIRIM WA\n\n${message}\n\n(Integrasi nyata akan segera hadir)`); }
     function switchMode(mode) { currentMode = mode; if (mode === 'siswa') { studentView.classList.remove('hidden'); parentView.classList.add('hidden'); } else { studentView.classList.add('hidden'); parentView.classList.remove('hidden'); if (!isParentLogged) { document.getElementById('pinSection').classList.remove('hidden'); document.getElementById('reportSection').classList.add('hidden'); } else { document.getElementById('pinSection').classList.add('hidden'); document.getElementById('reportSection').classList.remove('hidden'); loadParentReport(); } } document.querySelectorAll('.mode-btn').forEach(btn => { if (btn.getAttribute('data-mode') === mode) btn.classList.add('active'); else btn.classList.remove('active'); }); }
 
     document.querySelectorAll('.mode-btn').forEach(btn => { btn.addEventListener('click', (e) => { const mode = btn.getAttribute('data-mode'); switchMode(mode); }); });
@@ -642,7 +655,7 @@ Kepribadian:
     document.getElementById('refreshReportBtn').addEventListener('click', loadParentReport);
     document.getElementById('waSimulateBtn').addEventListener('click', simulateWhatsApp);
     switchMode('siswa');
-    console.log('✨ MindSeek-edu OCR.space siap (API key aman) + kompresi gambar + normalisasi notasi');
+    console.log('✅ MindSeek-edu siap: kompresi + normalisasi + OCR.space');
 </script>
 </body>
 </html>
