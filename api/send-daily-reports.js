@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   const parents = [
     {
       name: "Ibu Sari",
-      phone: "628123456789", // Ganti dengan nomor real
+      phone: "6281230559100", // Ganti dengan nomor real
       student_id: "siswa_001",
       student_name: "Raka"
     }
