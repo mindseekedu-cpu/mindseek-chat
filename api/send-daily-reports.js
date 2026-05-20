@@ -10,10 +10,10 @@ export default async function handler(req, res) {
   // Untuk demo, kita gunakan data statis. Nanti bisa dikembangkan dari database Supabase.
   const parents = [
     {
-      name: "Ibu Sari",
+      name: "Ibu Olivia",
       phone: "6281230559100", // Ganti dengan nomor real
       student_id: "siswa_001",
-      student_name: "Raka"
+      student_name: "Shawn Audrich Pangestu"
     }
     // Tambahkan lainnya
   ];
