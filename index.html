@@ -351,16 +351,19 @@
     // =========================================================
     const USER_ID = 'siswa_001';
 
-    // SYSTEM PROMPT
+    // SYSTEM PROMPT YANG LEBIH DISIPLIN (TIDAK MEMBERI LATIHAN SEBELUM SIswa SELESAI)
     const SYSTEM_PROMPT = `Kamu adalah Ai Mi (彭爱米), guru virtual yang sabar, lembut, dan penuh kasih sayang, khusus untuk Matematika tingkat A level.
-Kepribadian:
+
+ATURAN KETAT:
 - Awali setiap jawaban dengan sapaan hangat, contoh: "Hi, Ai Mi di sini~ 💕"
-- Gunakan bahasa Indonesia yang baik, menenangkan, penuh empati, dan mudah dipahami.
-- JANGAN PERNAH memberikan jawaban akhir secara langsung. Berikan petunjuk, rumus, langkah-langkah, analogi, atau contoh serupa.
-- JANGAN gunakan simbol markdown seperti *, **, _, atau [].
-- Tulis rumus dengan cara sederhana: x^2 - 5x + 6 = 0 (jangan gunakan \[ \] atau $$).
+- Gunakan bahasa Indonesia yang mudah dipahami anak.
+- JANGAN PERNAH memberikan jawaban akhir secara langsung. Berikan petunjuk, rumus, atau langkah-langkah.
+- JANGAN gunakan simbol markdown (*, **, _, []), tulis rumus dengan cara sederhana: x^2 - 5x + 6 = 0.
 - Setiap langkah penjelasan harus dalam pesan yang terpisah.
-- Jika siswa mengirim pesan yang diawali dengan "Ini soal PR saya", maka WAJIB membimbing step-by-step tanpa memberi jawaban.
+- Jika siswa mengirim pesan yang diawali dengan "Ini soal PR saya", fokuslah pada bimbingan soal-soal tersebut.
+- **JANGAN memberikan soal latihan tambahan atau latihan baru sebelum siswa menyelesaikan semua soal yang diajukan.** Tunggu jawaban siswa.
+- Setelah siswa berhasil menyelesaikan semua soal, barulah tanyakan apakah dia ingin latihan tambahan.
+- Jika siswa salah, bimbing dengan lembut, ulangi petunjuk.
 - Selingi dengan emoji 🌸, 💕, 🌟, 📚.`;
 
     // STATE
@@ -443,14 +446,32 @@ Kepribadian:
         });
     }
 
-    // ========== NORMALISASI NOTASI MATEMATIKA ==========
+    // ========== NORMALISASI NOTASI MATEMATIKA (LANJUTAN) ==========
     function normalizeMathNotation(text) {
         if (!text) return '';
-        // 1. Ubah pangkat Unicode
-        let result = text.replace(/²/g, '^2').replace(/³/g, '^3');
-        // 2. Ubah huruf diikuti angka tanpa tanda ^ (misal x2 -> x^2), tetapi hati-hati dengan 2x (angka lalu huruf)
+        let result = text;
+        // 1. Pangkat Unicode
+        result = result.replace(/²/g, '^2').replace(/³/g, '^3');
+        // 2. Ubah huruf diikuti angka (x2 -> x^2)
         result = result.replace(/([a-zA-Z])(\d+)/g, '$1^$2');
-        // 3. Perbaiki kasus "x-5x" menjadi "x^2 - 5x" jika ada pola? Tidak, karena OCR bisa salah.
+        
+        // 3. Aturan cerdas untuk kasus missing pangkat 2 pada suku pertama
+        //    Pola: (X atau x) diikuti spasi opsional, lalu -, lalu spasi opsional, lalu angka? atau langsung -5x
+        //    Contoh: "X- 5x" atau "x-5x" atau "X -5x" menjadi "x^2 - 5x"
+        //    Gunakan regex yang menangkap huruf, lalu minus, lalu angka+variabel
+        result = result.replace(/\b([xX])\s*-\s*(\d+[xX])/g, '$1^2 - $2');
+        //    Juga pola "x -5x" dengan spasi setelah minus? Tangani juga
+        result = result.replace(/\b([xX])\s*-\s+(\d+[xX])/g, '$1^2 - $2');
+        //    Pola "X- 5x" sudah tercakup.
+        
+        // 4. Hati-hati: jangan ubah jika sudah ada pangkat (x^2 - 5x) tetap
+        //    tidak akan terkena karena regex membutuhkan huruf langsung diikuti minus.
+        
+        // 5. Jika ditemukan "x - 5x" tetapi spasi, kita ubah juga dengan pola lebih longgar
+        result = result.replace(/\b([xX])\s+-\s+(\d+[xX])/g, '$1^2 - $2');
+        
+        // 6. Bersihkan spasi berlebih
+        result = result.replace(/\s+/g, ' ').trim();
         return result;
     }
 
@@ -492,7 +513,7 @@ Kepribadian:
         `;
         manualContainer.style.display = 'block';
         document.getElementById('manualTriggerBtn')?.addEventListener('click', () => {
-            userInput.value = '✍️ [Tulis soal matematika kamu di sini, contoh: x^2 - 5x + 6 = 0]';
+            userInput.value = '✍️ [Tulis soal di sini, contoh: x^2 - 5x + 6 = 0]';
             userInput.focus();
             manualContainer.style.display = 'none';
         });
@@ -503,7 +524,7 @@ Kepribadian:
         const file = event.target.files[0];
         if (!file) return;
         if (isLoading) {
-            appendChat('system-info', '⏳ Tunggu sebentar, Ai Mi masih menjawab.');
+            appendChat('system-info', '⏳ Tunggu, Ai Mi masih menjawab.');
             fileInput.value = '';
             return;
         }
@@ -513,22 +534,15 @@ Kepribadian:
 
         try {
             const compressedFile = await compressImage(file, 1024, 0.8);
-            appendChat('system-info', '📸 Gambar dikompres. Mengirim ke server OCR...');
+            appendChat('system-info', '📸 Gambar dikompres. Kirim ke server OCR...');
             
             let extractedText = await extractTextWithOcrSpace(compressedFile);
-            
-            // Pastikan fungsi normalisasi ada
-            if (typeof normalizeMathNotation === 'function') {
-                extractedText = normalizeMathNotation(extractedText);
-            } else {
-                console.warn('normalizeMathNotation tidak ditemukan, gunakan fallback');
-                // fallback sederhana
-                extractedText = extractedText.replace(/²/g, '^2').replace(/³/g, '^3');
-            }
+            // Normalisasi teks
+            extractedText = normalizeMathNotation(extractedText);
             
             const cleanText = extractedText.replace(/[^a-zA-Z0-9+\-*/^=()xX\s]/g, '');
             if (cleanText.length < 10) {
-                appendChat('system-info', '⚠️ Teks soal tidak terbaca jelas. Silakan tulis manual.');
+                appendChat('system-info', '⚠️ Teks tidak terbaca jelas. Silakan tulis manual.');
                 showManualInputButton();
                 uploadLabel.classList.remove('disabled');
                 fileInput.value = '';
@@ -556,9 +570,8 @@ Kepribadian:
         let message = userInput.value.trim();
         if (!message || isLoading) return;
         
-        if (typeof normalizeMathNotation === 'function') {
-            message = normalizeMathNotation(message);
-        }
+        // Normalisasi juga pesan manual
+        message = normalizeMathNotation(message);
         
         isLoading = true;
         sendBtn.disabled = true;
@@ -655,7 +668,7 @@ Kepribadian:
     document.getElementById('refreshReportBtn').addEventListener('click', loadParentReport);
     document.getElementById('waSimulateBtn').addEventListener('click', simulateWhatsApp);
     switchMode('siswa');
-    console.log('✅ MindSeek-edu siap: kompresi + normalisasi + OCR.space');
+    console.log('✅ MindSeek-edu siap: kompresi + normalisasi lanjutan + prompt disiplin');
 </script>
 </body>
 </html>
