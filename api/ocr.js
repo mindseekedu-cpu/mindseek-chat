@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   const formData = new FormData();
   formData.append('file', new Blob([buffer], { type: 'image/jpeg' }), 'upload.jpg');
   formData.append('apikey', ocrApiKey);
-  formData.append('language', 'ind');
+  formData.append('language', 'eng');
   formData.append('isTable', 'true');
   formData.append('OCREngine', '2');
 
