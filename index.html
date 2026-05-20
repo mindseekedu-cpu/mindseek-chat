@@ -19,7 +19,6 @@
             line-height: 1.4;
         }
 
-        /* HEADER dengan logo bulat */
         .header {
             background: linear-gradient(135deg, #0b5e7e, #0288d1);
             color: white;
@@ -97,15 +96,11 @@
             color: #0288d1;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
-
-        /* CONTAINER */
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 18px 16px 24px;
         }
-
-        /* STUDENT VIEW */
         .subject-select {
             margin-bottom: 16px;
         }
@@ -170,7 +165,6 @@
             align-self: flex-start;
             font-size: 0.85rem;
         }
-        /* Default: input dan tombol dalam satu baris (desktop/tablet) */
         .input-row {
             display: flex;
             gap: 12px;
@@ -185,7 +179,7 @@
             background: white;
             min-height: 48px;
         }
-        .input-row button {
+        .input-row button, .upload-label {
             background: #0288d1;
             color: white;
             border: none;
@@ -197,13 +191,20 @@
             transition: 0.2s;
             min-height: 48px;
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
-        .input-row button:disabled {
+        .upload-label {
+            background: #f0ad4e;
+        }
+        .upload-label:hover {
+            background: #ec971f;
+        }
+        .input-row button:disabled, .upload-label.disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
-
-        /* PARENT VIEW */
         .pin-section {
             text-align: center;
             background: white;
@@ -283,7 +284,6 @@
             display: none;
         }
 
-        /* ===== RESPONSIVE: Pada HP, tombol di bawah input ===== */
         @media (max-width: 600px) {
             .container {
                 padding: 12px;
@@ -312,7 +312,6 @@
             .chat-box {
                 height: 55vh;
             }
-            /* Kunci perbaikan: ubah ke kolom */
             .input-row {
                 flex-direction: column;
                 align-items: stretch;
@@ -323,13 +322,15 @@
                 text-align: left;
                 font-size: 0.95rem;
             }
-            .input-row button {
+            .input-row button, .upload-label {
                 width: 100%;
                 padding: 14px;
                 white-space: normal;
             }
         }
     </style>
+    <!-- Tesseract.js untuk OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 
@@ -368,7 +369,9 @@
         <div class="msg system-info">🌸 Hi! Aku Ai Mi (彭爱米), guru virtual yang sabar. Ayo belajar matematika A level bersama! 🌸</div>
     </div>
     <div class="input-row">
-        <input type="text" id="userInput" placeholder="Contoh: log_a b = 2, log_b c = 3 → log_c a = ?" autocomplete="off">
+        <input type="text" id="userInput" placeholder="Tanya Ai Mi atau upload PR..." autocomplete="off">
+        <label for="fileInput" class="upload-label" id="uploadLabel">📤 Upload PR</label>
+        <input type="file" id="fileInput" accept="image/*" style="display:none;">
         <button id="sendBtn">Kirim</button>
     </div>
 </div>
@@ -410,14 +413,14 @@
     // SYSTEM PROMPT (boleh tetap di frontend karena bukan rahasia)
     const SYSTEM_PROMPT = `Kamu adalah Ai Mi (彭爱米), guru virtual yang sabar, lembut, dan penuh kasih sayang, khusus untuk Matematika tingkat A level (advanced).
 Kepribadian:
-- Awali setiap jawaban dengan sapaan hangat, misal: "Halo sayang, Ai Mi di sini~ 💕"
+- Awali setiap jawaban dengan sapaan hangat, misal: "Hi, Ai Mi di sini~ 💕"
 - Gunakan bahasa Indonesia yang menenangkan, penuh empati, dan mudah dipahami.
 - JANGAN PERNAH memberikan jawaban akhir secara langsung. Berikan petunjuk, rumus, langkah-langkah, analogi, atau contoh serupa.
-- Setelah memberikan bimbingan, akhiri dengan SATU soal latihan yang relevan dengan topik A level (logaritma, eksponensial, limit, turunan, integral, dll).
-- Jika siswa menjawab soal latihan dengan benar, beri pujian tulus dan semangat.
-- Jika siswa salah, bimbing dengan lembut, jangan mengkritik.
-- Selingi dengan emoji seperti 🌸, 💕, 🌟, 📚 sesuai suasana.
-- Setelah siswa paham, beri kata motivasi, misal: "Kamu hebat! Terus semangat ya sayang~"`;
+- Jika siswa mengirim pesan yang diawali dengan "Ini soal PR saya", maka kamu WAJIB membimbing step-by-step tanpa memberi jawaban.
+- Setelah memberikan bimbingan, akhiri dengan SATU soal latihan yang relevan.
+- Jika siswa menjawab dengan benar, puji dengan tulus.
+- Jika salah, bimbing lembut tanpa mengkritik.
+- Selingi dengan emoji 🌸, 💕, 🌟, 📚.`;
 
     // STATE
     let chatMessages = [];
@@ -431,6 +434,8 @@ Kepribadian:
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
     const subjectSelect = document.getElementById('subjectSelect');
+    const fileInput = document.getElementById('fileInput');
+    const uploadLabel = document.getElementById('uploadLabel');
 
     function escapeHtml(str) {
         if (!str) return '';
@@ -467,17 +472,82 @@ Kepribadian:
         }
     }
 
-    async function sendMessage() {
+    // ========== OCR dengan Tesseract.js ==========
+    async function extractTextFromImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = async function() {
+                    try {
+                        // Gunakan bahasa Indonesia (ind)
+                        const result = await Tesseract.recognize(img, 'ind', {
+                            logger: m => console.log(m) // opsional
+                        });
+                        resolve(result.data.text);
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Event upload file
+    fileInput.addEventListener('change', async function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (isLoading) {
+            appendChat('system-info', '⏳ Tunggu sebentar, Ai Mi masih menjawab pertanyaan sebelumnya.');
+            fileInput.value = '';
+            return;
+        }
+        
+        uploadLabel.classList.add('disabled');
+        appendChat('system-info', '📸 Sedang membaca soal dari gambar... Harap tunggu sebentar.');
+        
+        try {
+            const extractedText = await extractTextFromImage(file);
+            if (!extractedText || extractedText.trim().length < 5) {
+                appendChat('system-info', '⚠️ Tidak dapat membaca teks dari gambar dengan jelas. Coba foto yang lebih terang, rapi, atau tulis manual.');
+                uploadLabel.classList.remove('disabled');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Tampilkan teks hasil OCR (agar user tahu apa yang terbaca)
+            const shortText = extractedText.substring(0, 300);
+            appendChat('system-info', `📖 Teks yang terbaca:\n${shortText}${extractedText.length > 300 ? '...' : ''}`);
+            
+            // Kirim sebagai pesan ke Ai Mi dengan instruksi khusus
+            const questionMessage = `Ini soal PR saya. Tolong bimbing saya step-by-step tanpa memberikan jawaban langsung. Soalnya:\n\n${extractedText}`;
+            userInput.value = questionMessage;
+            // Otomatis kirim
+            await sendMessage(true); // true = skip double trigger
+        } catch (err) {
+            console.error('OCR error:', err);
+            appendChat('system-info', '💥 Gagal membaca gambar. Coba lagi dengan foto yang lebih jelas.');
+        } finally {
+            uploadLabel.classList.remove('disabled');
+            fileInput.value = '';
+        }
+    });
+
+    // ========== Kirim Pesan ==========
+    async function sendMessage(skipClear = false) {
         const message = userInput.value.trim();
         if (!message || isLoading) return;
 
         isLoading = true;
         sendBtn.disabled = true;
         userInput.disabled = true;
+        uploadLabel.style.pointerEvents = 'none';
 
         appendChat('user', message);
         chatMessages.push({ role: 'user', content: message });
-        userInput.value = '';
+        if (!skipClear) userInput.value = '';
 
         showLoading();
 
@@ -524,10 +594,12 @@ Kepribadian:
             isLoading = false;
             sendBtn.disabled = false;
             userInput.disabled = false;
+            uploadLabel.style.pointerEvents = 'auto';
             userInput.focus();
         }
     }
 
+    // ========== Laporan Orang Tua ==========
     async function loadParentReport() {
         const summaryDiv = document.getElementById('reportSummary');
         const historyDiv = document.getElementById('chatHistory');
@@ -627,7 +699,7 @@ Kepribadian:
         });
     });
 
-    sendBtn.addEventListener('click', sendMessage);
+    sendBtn.addEventListener('click', () => sendMessage());
     userInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !isLoading) sendMessage();
     });
@@ -641,7 +713,7 @@ Kepribadian:
 
     switchMode('siswa');
 
-    console.log('✨ MindSeek-edu aman! Semua kredensial disimpan di backend Vercel.');
+    console.log('✨ MindSeek-edu aman! Fitur Upload PR + OCR siap digunakan.');
 </script>
 </body>
 </html>
