@@ -12,6 +12,9 @@
             color: #1e2f3e;
             line-height: 1.4;
             overscroll-behavior: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         .header {
             background: linear-gradient(135deg, #0b5e7e, #0288d1);
@@ -26,6 +29,7 @@
             z-index: 20;
             gap: 12px;
             flex-wrap: wrap;
+            flex-shrink: 0;
         }
         .logo-area { display: flex; align-items: center; gap: 8px; }
         .logo-circle {
@@ -71,6 +75,10 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         .selection-panel {
             background: white;
@@ -79,6 +87,7 @@
             margin-bottom: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             display: block;
+            flex-shrink: 0;
         }
         .selection-panel.hidden { display: none; }
         .selection-row {
@@ -114,6 +123,7 @@
             flex-wrap: wrap;
             gap: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            flex-shrink: 0;
         }
         .summary-chip.hidden { display: none; }
         .chip-text {
@@ -140,8 +150,6 @@
         .chat-box {
             background: white;
             border-radius: 24px;
-            height: 50vh;
-            min-height: 280px;
             overflow-y: auto;
             padding: 16px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -150,6 +158,8 @@
             flex-direction: column;
             gap: 12px;
             overscroll-behavior: contain;
+            flex: 1;
+            min-height: 0;
         }
         .msg {
             max-width: 85%;
@@ -189,6 +199,7 @@
         }
         .input-row {
             margin-bottom: 10px;
+            flex-shrink: 0;
         }
         .input-row textarea {
             width: 100%;
@@ -197,10 +208,10 @@
             border: 1px solid #bcdff0;
             font-size: 0.9rem;
             background: white;
-            min-height: 44px;
+            min-height: 48px;
             font-family: inherit;
             resize: vertical;
-            overflow-y: auto;
+            overflow-y: hidden;
         }
         .button-row {
             display: flex;
@@ -208,6 +219,7 @@
             flex-wrap: wrap;
             gap: 6px;
             justify-content: stretch;
+            flex-shrink: 0;
         }
         .button-row button, .button-row label {
             flex: 1;
@@ -436,8 +448,8 @@
 🟢 SALAM PEMBUKA (otomatis saat siswa mengatakan "Halo Ai Mi, saya siap belajar dengan bahasa Indonesia" atau kalimat serupa):
 "Hi! 🌸 Aku Ai Mi, tutor matematika SD. Ada yang bisa aku bantu?
 1️⃣ Apakah kamu memiliki tugas atau PR? (tulis atau upload foto 📸)
-2️⃣ Berlatih untuk meningkatkan nilai📚
-3️⃣ Peta jalan pembelajaran 🗺️
+2️⃣ Mau berlatih untuk meningkatkan nilai? 📚
+3️⃣ Mau peta jalan pembelajaran mu? 🗺️
 Pilih nomor berapa? 😊"
 
 🧪 CONTOH Mode PR (BENAR):
@@ -504,9 +516,9 @@ Ai Mi: "Betul ✅ Jadi 8+5=13. Kamu bisa!"
 
 🟢 GREETING (automatic when student says "Halo Ai Mi, I'm ready to learn in English" or similar phrase):
 "Hi! 🌸 I'm Ai Mi, your elementary math tutor. How can I help?
-1️⃣ Do you have any assignments or homework you want to do? (write or upload photo 📸)
-2️⃣ Practice to improve your grades 📚
-3️⃣ Learning roadmap 🗺️
+1️⃣ Do you have any assignments or homework? (write or upload photo 📸)
+2️⃣ Want to practice to improve your grades? 📚
+3️⃣ Want a roadmap for your learning? 🗺️
 Choose a number! 😊"
 
 🧪 EXAMPLE Homework (CORRECT):
@@ -554,7 +566,7 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
     const chipText = document.getElementById('chipText');
     const editBtn = document.getElementById('editSelectionBtn');
 
-    // Auto-resize textarea
+    // Auto-resize textarea (hilangkan scroll)
     function autoResizeTextarea() {
         userInput.style.height = 'auto';
         userInput.style.height = Math.min(userInput.scrollHeight, 150) + 'px';
@@ -610,6 +622,9 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
         const triggerMessage = currentLanguage === 'id' ? "Halo Ai Mi, saya siap belajar dengan bahasa Indonesia" : "Halo Ai Mi, I'm ready to learn in English";
         userInput.value = triggerMessage;
         await sendMessage(true);
+        // Bersihkan input setelah pesan trigger terkirim
+        userInput.value = '';
+        autoResizeTextarea();
     }
 
     // ========== LOAD CHAT HISTORY ==========
@@ -721,6 +736,9 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
             showSystemMessage(`${currentLanguage==='id'?'📖 Teks terbaca:\n':'📖 Extracted text:\n'}${text.substring(0,300)}${text.length>300?'...':''}`);
             userInput.value=`${currentLanguage==='id'?'Soal:\n':'Question:\n'}${text}`;
             await sendMessage(true);
+            // Kosongkan setelah kirim
+            userInput.value = '';
+            autoResizeTextarea();
         }catch(err){ showSystemMessage(`${currentLanguage==='id'?'💥 Gagal: ':'💥 Failed: '}${err.message}. ${currentLanguage==='id'?'Coba foto jelas.':'Take a clearer photo.'}`); showManualInputButton(); }
         finally{ uploadLabel.classList.remove('disabled'); fileInput.value=''; }
     });
@@ -751,7 +769,13 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
             chatMessages.push({role:'assistant',content:aiReply});
             await fetch('/api/save-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:USER_ID,user_message:message,ai_message:aiReply,subject:subjectSelect.value})});
         }catch(err){ hideLoading(); console.error(err); appendChat('ai',currentLanguage==='id'?'💕 Gangguan jaringan. Coba lagi.':'💕 Network error. Try again.'); }
-        finally{ isLoading=false; sendBtn.disabled=false; userInput.disabled=false; uploadLabel.style.pointerEvents='auto'; userInput.focus(); }
+        finally{ 
+            isLoading=false; 
+            sendBtn.disabled=false; 
+            userInput.disabled=false; 
+            uploadLabel.style.pointerEvents='auto'; 
+            // TIDAK auto-focus agar keyboard tidak muncul otomatis
+        }
     }
 
     // ========== PARENT MODE ==========
@@ -792,7 +816,8 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
     clearTextBtn.addEventListener('click',clearText);
     deleteHistoryBtn.addEventListener('click',deleteHistory);
     sendBtn.addEventListener('click',()=>sendMessage());
-    userInput.addEventListener('keypress',(e)=>{ if(e.key==='Enter' && !e.shiftKey && !isLoading){ e.preventDefault(); sendMessage(); } });
+    // Hapus event listener Enter untuk kirim – biarkan Enter membuat baris baru saja
+    // Tidak ada lagi userInput.addEventListener('keypress',...)
     document.getElementById('pinLoginBtn').addEventListener('click',()=>{ const pin=document.getElementById('pinInput').value; loginParent(pin); });
     document.getElementById('refreshReportBtn').addEventListener('click',loadParentReport);
     document.getElementById('waSimulateBtn').addEventListener('click',simulateWhatsApp);
@@ -824,7 +849,7 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
     updateDropdowns();
     switchMode('siswa');
     loadChatHistory();
-    console.log('✅ MindSeek.edu SD final siap (tombol teks)');
+    console.log('✅ MindSeek.edu SD final siap (tombol teks, enter tidak kirim, no auto-focus)');
 </script>
 </body>
 </html>
