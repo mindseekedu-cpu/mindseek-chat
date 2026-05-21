@@ -218,7 +218,8 @@
             border: none;
             padding: 8px 0;
             border-radius: 40px;
-            font-size: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
             min-height: 44px;
@@ -226,7 +227,6 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
-            font-weight: normal;
         }
         .upload-label { background: #f0ad4e !important; }
         .upload-label:hover { background: #ec971f !important; }
@@ -307,7 +307,7 @@
             .lang-btn, .mode-btn { padding: 4px 10px; font-size: 0.7rem; }
             .button-row button, .button-row label {
                 min-width: 55px;
-                font-size: 0.9rem;
+                font-size: 0.7rem;
                 padding: 6px 0;
             }
             .selection-row label { width: 55px; font-size: 0.75rem; }
@@ -355,11 +355,11 @@
         <textarea id="userInput" placeholder="Tanya Ai Mi atau upload PR..." rows="1"></textarea>
     </div>
     <div class="button-row">
-        <button id="sendBtn" class="send-btn" aria-label="Send">📨</button>
-        <label for="fileInput" class="upload-label" id="uploadLabel" aria-label="Upload">📤</label>
+        <button id="sendBtn" class="send-btn">Send</button>
+        <label for="fileInput" class="upload-label" id="uploadLabel">Upload</label>
         <input type="file" id="fileInput" accept="image/*" style="display:none;">
-        <button id="clearTextBtn" class="clear-text-btn" aria-label="Clear Text">🗑️</button>
-        <button id="deleteHistoryBtn" class="delete-history-btn" aria-label="Delete History">🗑️❌</button>
+        <button id="clearTextBtn" class="clear-text-btn">Clear Text</button>
+        <button id="deleteHistoryBtn" class="delete-history-btn">Delete History</button>
     </div>
     <div id="manualInputContainer" style="display: none; margin-top: 10px;"></div>
 </div>
@@ -561,7 +561,6 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
     }
     userInput.addEventListener('input', autoResizeTextarea);
 
-    // Helper functions
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
     function renderMarkdown(text) { return escapeHtml(text).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>'); }
     function appendChat(role, text, isSystem=false) { const div = document.createElement('div'); div.className = `msg ${role}`; if (isSystem) div.classList.add('system-info'); if (role === 'ai') div.innerHTML = renderMarkdown(text); else div.textContent = text; chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight; }
@@ -607,9 +606,7 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
         if (!selectionsMade) return;
         let context = `Siswa kelas: ${currentGrade}, topik: ${currentTopic}, mata pelajaran: ${currentSubject}. Gunakan analogi untuk SD.`;
         if (currentLanguage === 'en') context = `Student grade: ${currentGrade}, topic: ${currentTopic}, subject: ${currentSubject}. Use analogies for elementary school.`;
-        // Konteks tersembunyi (system role)
         chatMessages.unshift({ role: 'system', content: context });
-        // Kirim pesan trigger untuk salam pembuka
         const triggerMessage = currentLanguage === 'id' ? "Halo Ai Mi, saya siap belajar dengan bahasa Indonesia" : "Halo Ai Mi, I'm ready to learn in English";
         userInput.value = triggerMessage;
         await sendMessage(true);
@@ -642,7 +639,6 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
                 body: JSON.stringify({ user_id: USER_ID })
             });
             if (!response.ok) throw new Error('Delete failed');
-            // Clear UI and local state
             while (chatBox.children.length > 0) chatBox.removeChild(chatBox.firstChild);
             chatMessages = [];
             selectionsMade = false;
@@ -810,7 +806,6 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
             document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             updateDropdowns();
-            // Reset selections
             gradeSelect.value = "";
             topicSelect.disabled = true;
             topicSelect.innerHTML = '<option value="" disabled selected>-- ' + (currentLanguage==='id'?'Pilih Topik':'Select Topic') + ' --</option>';
@@ -818,10 +813,8 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
             selectionsMade = false;
             selectionPanel.classList.remove('hidden');
             summaryChip.classList.add('hidden');
-            // Clear chatMessages and UI
             while (chatBox.children.length > 0) chatBox.removeChild(chatBox.firstChild);
             chatMessages = [];
-            // If grade/topic/subject already selected? No, they are cleared. So just show initial message.
             appendChat('system-info', currentLanguage==='id'?'🌸 Bahasa diubah. Silakan pilih kelas, topik, dan mata pelajaran.':'🌸 Language changed. Please select grade, topic, and subject.', true);
         });
     });
@@ -831,7 +824,7 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
     updateDropdowns();
     switchMode('siswa');
     loadChatHistory();
-    console.log('✅ MindSeek.edu SD final siap');
+    console.log('✅ MindSeek.edu SD final siap (tombol teks)');
 </script>
 </body>
 </html>
