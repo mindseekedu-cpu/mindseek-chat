@@ -443,7 +443,9 @@
 4. Setelah 5 soal, hitung nilai = (benar/5)×100. Tampilkan bintang: ⭐⭐⭐ (≥80), ⭐⭐ (60-79), ⭐ (<60).
 5. Tanyakan: "Nilai kamu X. Mau lanjut ke tingkat berikutnya? 🟡 (atau ulang yang mudah?)"
 
-📘 MODE ROADMAP (jika minta): Berikan daftar bab per semester sesuai kelas.
+📘 MODE ROADMAP (jika minta): 
+- Berikan daftar bab per semester sesuai kelas (pakai emoji kalender 📅, buku 📚).
+- Tanyakan: "Ini peta jalan belajarmu. Siap mulai? Sebutkan 'Mulai' ya~ 🚀"
 
 🟢 SALAM PEMBUKA (otomatis saat siswa mengatakan "Halo Ai Mi, saya siap belajar dengan bahasa Indonesia" atau kalimat serupa):
 "Hi! 🌸 Aku Ai Mi, tutor matematika SD. Ada yang bisa aku bantu?
@@ -513,6 +515,8 @@ Ai Mi: "Betul ✅ Jadi 8+5=13. Kamu bisa!"
 5. Ask: "Your score is X. Want to move to the next level? 🟡 (or repeat easy level?)"
 
 📘 ROADMAP MODE (if asked): Give list of chapters per semester per grade.
+- Provide a list of chapters per semester according to grade (use the calendar emoji 📅, book emoji 📚).
+- Ask: "Here's your study roadmap. Ready to start? Say 'Start', okay~ 🚀"
 
 🟢 GREETING (automatic when student says "Halo Ai Mi, I'm ready to learn in English" or similar phrase):
 "Hi! 🌸 I'm Ai Mi, your elementary math tutor. How can I help?
@@ -622,9 +626,11 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
         const triggerMessage = currentLanguage === 'id' ? "Halo Ai Mi, saya siap belajar dengan bahasa Indonesia" : "Halo Ai Mi, I'm ready to learn in English";
         userInput.value = triggerMessage;
         await sendMessage(true);
-        // Bersihkan input setelah pesan trigger terkirim
-        userInput.value = '';
-        autoResizeTextarea();
+        // Bersihkan input setelah pesan trigger terkirim (delay untuk memastikan proses selesai)
+        setTimeout(() => {
+            userInput.value = '';
+            autoResizeTextarea();
+        }, 50);
     }
 
     // ========== LOAD CHAT HISTORY ==========
@@ -774,7 +780,8 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
             sendBtn.disabled=false; 
             userInput.disabled=false; 
             uploadLabel.style.pointerEvents='auto'; 
-            // TIDAK auto-focus agar keyboard tidak muncul otomatis
+            // Lepaskan fokus agar keyboard tidak muncul otomatis
+            userInput.blur();
         }
     }
 
@@ -849,7 +856,7 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
     updateDropdowns();
     switchMode('siswa');
     loadChatHistory();
-    console.log('✅ MindSeek.edu SD final siap (tombol teks, enter tidak kirim, no auto-focus)');
+    console.log('✅ MindSeek.edu SD final siap (tombol teks, enter tidak kirim, no auto-focus, trigger hilang)');
 </script>
 </body>
 </html>
