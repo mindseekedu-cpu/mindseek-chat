@@ -16,103 +16,155 @@
             background: #eef5fc;
             color: #1e2f3e;
             line-height: 1.4;
-            overscroll-behavior: none; /* Cegah pull-to-refresh */
+            overscroll-behavior: none; /* cegah pull-to-refresh */
         }
         .header {
             background: linear-gradient(135deg, #0b5e7e, #0288d1);
             color: white;
-            padding: 12px 20px;
+            padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 20;
             gap: 12px;
             flex-wrap: wrap;
         }
-        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-area { display: flex; align-items: center; gap: 8px; }
         .logo-circle {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
-        .logo-circle span { font-size: 28px; font-weight: 800; color: #0288d1; }
-        .logo-text h1 { font-size: 1.5rem; font-weight: 700; }
-        .tagline { font-size: 0.7rem; opacity: 0.9; margin-top: 2px; }
-        .mode-toggle {
+        .logo-circle span { font-size: 24px; font-weight: 800; color: #0288d1; }
+        .logo-text h1 { font-size: 1.2rem; font-weight: 700; }
+        .tagline { font-size: 0.6rem; opacity: 0.9; }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .lang-toggle, .mode-toggle {
             display: flex;
             background: rgba(255,255,255,0.2);
             border-radius: 40px;
             gap: 2px;
             padding: 2px;
         }
-        .mode-btn {
-            padding: 8px 18px;
+        .lang-btn, .mode-btn {
+            padding: 6px 12px;
             border: none;
             background: transparent;
             color: white;
             font-weight: 600;
             border-radius: 40px;
             cursor: pointer;
-            font-size: 0.85rem;
-            min-height: 44px;
+            font-size: 0.75rem;
+            min-height: 32px;
         }
-        .mode-btn.active {
+        .lang-btn.active, .mode-btn.active {
             background: white;
             color: #0288d1;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 18px 16px 24px;
+            padding: 16px;
         }
-        .filters-row {
-            display: flex;
-            gap: 12px;
+        /* Dropdown panel (awal tampil) */
+        .selection-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 12px;
             margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: block;
+        }
+        .selection-panel.hidden {
+            display: none;
+        }
+        .selection-row {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             flex-wrap: wrap;
         }
-        .filters-row select {
+        .selection-row label {
+            font-weight: 600;
+            width: 60px;
+            font-size: 0.85rem;
+            color: #0288d1;
+        }
+        .selection-row select {
             flex: 1;
-            padding: 10px 12px;
+            padding: 8px 12px;
             border-radius: 28px;
             border: 1px solid #bcdff0;
             background: white;
-            font-size: 0.9rem;
-            cursor: pointer;
-            min-height: 44px;
+            font-size: 0.85rem;
+            min-height: 40px;
         }
-        select:disabled {
-            background: #f0f0f0;
-            cursor: not-allowed;
-            opacity: 0.7;
+        /* Chip ringkasan (setelah dipilih) */
+        .summary-chip {
+            background: white;
+            border-radius: 40px;
+            padding: 8px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .summary-chip.hidden {
+            display: none;
+        }
+        .chip-text {
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: #f0f7fc;
+            padding: 6px 12px;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .edit-icon {
+            background: #eef2f5;
+            border: none;
+            border-radius: 30px;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         .subject-select {
             margin-bottom: 16px;
         }
         .subject-select select {
             width: 100%;
-            padding: 12px 14px;
+            padding: 10px 14px;
             border-radius: 28px;
             border: 1px solid #bcdff0;
             background: white;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            min-height: 48px;
+            font-size: 0.9rem;
+            min-height: 44px;
         }
         .chat-box {
             background: white;
             border-radius: 24px;
             height: 50vh;
-            min-height: 300px;
+            min-height: 280px;
             overflow-y: auto;
             padding: 16px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -120,16 +172,15 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            overscroll-behavior: contain; /* tambahan cegah scroll ke refresh */
+            overscroll-behavior: contain;
         }
         .msg {
             max-width: 85%;
-            padding: 12px 16px;
+            padding: 10px 14px;
             border-radius: 20px;
-            font-size: 0.95rem;
-            line-height: 1.45;
+            font-size: 0.9rem;
+            line-height: 1.4;
             word-wrap: break-word;
-            white-space: pre-wrap;
         }
         .msg.user {
             background: #0288d1;
@@ -147,35 +198,35 @@
             background: #fff3e0;
             text-align: center;
             max-width: 100%;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #b45f06;
         }
         .loading-indicator {
             background: #f0f7fc;
-            padding: 10px 16px;
+            padding: 8px 14px;
             border-radius: 20px;
             font-style: italic;
             color: #2c6e9e;
             align-self: flex-start;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
         .input-row {
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .input-row input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 16px;
             border-radius: 48px;
             border: 1px solid #bcdff0;
-            font-size: 1rem;
+            font-size: 0.9rem;
             background: white;
-            min-height: 48px;
+            min-height: 44px;
         }
         .button-row {
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
             justify-content: stretch;
         }
         .button-row button, .button-row label {
@@ -186,12 +237,12 @@
             color: white;
             border: none;
             padding: 8px 0;
-            border-radius: 48px;
-            font-size: 0.75rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
-            min-height: 40px;
+            min-height: 38px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -201,10 +252,10 @@
             background: #f0ad4e !important;
         }
         .upload-label:hover { background: #ec971f !important; }
-        .clear-input-btn {
+        .clear-text-btn {
             background: #6c757d !important;
         }
-        .clear-input-btn:hover { background: #5a6268 !important; }
+        .clear-text-btn:hover { background: #5a6268 !important; }
         .clear-history-btn {
             background: #dc2626 !important;
         }
@@ -215,106 +266,78 @@
             margin-top: 8px;
             width: 100%;
             text-align: center;
-            padding: 12px;
-            border-radius: 48px;
+            padding: 10px;
+            border-radius: 40px;
             cursor: pointer;
         }
         .pin-section {
             text-align: center;
             background: white;
             border-radius: 28px;
-            padding: 32px 20px;
+            padding: 24px 20px;
             margin-top: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         .pin-section input {
-            padding: 14px;
-            font-size: 1.4rem;
+            padding: 12px;
+            font-size: 1.2rem;
             text-align: center;
             border-radius: 48px;
             border: 1px solid #bcdff0;
-            width: 160px;
-            letter-spacing: 8px;
+            width: 140px;
+            letter-spacing: 6px;
             font-weight: bold;
-            min-height: 56px;
         }
         .pin-section button {
-            margin-top: 20px;
-            padding: 12px 28px;
+            margin-top: 16px;
+            padding: 10px 24px;
             background: #0288d1;
             color: white;
             border: none;
             border-radius: 48px;
-            font-size: 1rem;
             cursor: pointer;
         }
         .report-card {
             background: white;
-            border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
-        .report-card h3 {
-            color: #0288d1;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .report-card h3 { color: #0288d1; margin-bottom: 10px; font-size: 1rem; }
         .chat-history-item {
-            padding: 12px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #e0f2fe;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
         .wa-btn, .refresh-btn {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             background: #25D366;
             color: white;
             border: none;
             border-radius: 48px;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: bold;
             cursor: pointer;
             margin-top: 8px;
-            min-height: 52px;
         }
-        .refresh-btn {
-            background: #f0ad4e;
-            margin-top: 0;
-            width: auto;
-            padding: 10px 18px;
-            font-size: 0.85rem;
-        }
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .refresh-btn { background: #f0ad4e; width: auto; padding: 8px 16px; font-size: 0.8rem; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
         .hidden { display: none; }
         @media (max-width: 600px) {
             .container { padding: 12px; }
-            .msg { max-width: 90%; font-size: 0.9rem; }
-            .logo-circle { width: 42px; height: 42px; }
-            .logo-circle span { font-size: 22px; }
-            .logo-text h1 { font-size: 1.2rem; }
-            .tagline { font-size: 0.6rem; }
-            .mode-btn { padding: 6px 12px; font-size: 0.75rem; }
-            .chat-box { height: 45vh; }
-            /* Tombol tetap horizontal, tidak perlu column */
-            .button-row {
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
+            .msg { max-width: 90%; font-size: 0.85rem; }
+            .logo-circle { width: 36px; height: 36px; }
+            .logo-circle span { font-size: 20px; }
+            .logo-text h1 { font-size: 1rem; }
+            .tagline { font-size: 0.5rem; }
+            .lang-btn, .mode-btn { padding: 4px 10px; font-size: 0.7rem; }
             .button-row button, .button-row label {
-                min-width: 65px;
-                font-size: 0.7rem;
+                min-width: 60px;
+                font-size: 0.65rem;
                 padding: 6px 0;
             }
-            .filters-row { flex-direction: column; }
+            .selection-row label { width: 55px; font-size: 0.75rem; }
+            .selection-row select { font-size: 0.75rem; padding: 6px 8px; }
         }
     </style>
 </head>
@@ -323,68 +346,118 @@
 <div class="header">
     <div class="logo-area">
         <div class="logo-circle"><span>MS</span></div>
-        <div class="logo-text"><h1>MindSeek</h1><div class="tagline">Belajar Matematika SD dengan Ai Mi</div></div>
+        <div class="logo-text">
+            <h1>MindSeek</h1>
+            <div class="tagline">Belajar Matematika SD</div>
+        </div>
     </div>
-    <div class="mode-toggle">
-        <button class="mode-btn active" data-mode="siswa">Siswa</button>
-        <button class="mode-btn" data-mode="ortu">Orang Tua</button>
+    <div class="header-actions">
+        <div class="lang-toggle" id="langToggle">
+            <button class="lang-btn active" data-lang="id">ID</button>
+            <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <div class="mode-toggle">
+            <button class="mode-btn active" data-mode="siswa">Siswa</button>
+            <button class="mode-btn" data-mode="ortu">Orang Tua</button>
+        </div>
     </div>
 </div>
 
 <!-- MODE SISWA -->
 <div class="container" id="studentView">
-    <div class="filters-row">
-        <select id="gradeSelect">
-            <option value="" disabled selected>-- Pilih Kelas --</option>
-            <option value="Kelas 1">Kelas 1 SD</option>
-            <option value="Kelas 2">Kelas 2 SD</option>
-            <option value="Kelas 3">Kelas 3 SD</option>
-            <option value="Kelas 4">Kelas 4 SD</option>
-            <option value="Kelas 5">Kelas 5 SD</option>
-            <option value="Kelas 6">Kelas 6 SD</option>
-        </select>
-        <select id="topicSelect" disabled>
-            <option value="" disabled selected>-- Pilih Topik --</option>
-        </select>
+    <!-- Panel pilihan (dropdown) -->
+    <div id="selectionPanel" class="selection-panel">
+        <div class="selection-row">
+            <label id="gradeLabel">Grade</label>
+            <select id="gradeSelect"></select>
+        </div>
+        <div class="selection-row">
+            <label id="topicLabel">Topic</label>
+            <select id="topicSelect" disabled></select>
+        </div>
+        <div class="selection-row">
+            <label id="subjectLabel">Subject</label>
+            <select id="subjectSelect"></select>
+        </div>
     </div>
-    <div class="subject-select">
-        <select id="subjectSelect">
-            <option value="Matematika">📐 Matematika SD</option>
-            <option value="Fisika" disabled>⚛️ Fisika (segera)</option>
-            <option value="Biologi" disabled>🧬 Biologi (segera)</option>
-            <option value="Kimia" disabled>🧪 Kimia (segera)</option>
-        </select>
+    <!-- Chip ringkasan (setelah dipilih) -->
+    <div id="summaryChip" class="summary-chip hidden">
+        <div id="chipText" class="chip-text">📐 Mathematics · Grade 3 · Fractions</div>
+        <button id="editSelectionBtn" class="edit-icon">✏️ Edit</button>
     </div>
     <div class="chat-box" id="chatBox">
-        <div class="msg system-info">🌸 Hi! Aku Ai Mi, tutor matematika SD yang sabar. Silakan pilih kelas dan topik di atas untuk memulai. 🌸</div>
+        <div class="msg system-info">🌸 Hi! Aku Ai Mi, tutor matematika SD yang sabar. Silakan pilih kelas, topik, dan mata pelajaran di atas untuk memulai. 🌸</div>
     </div>
     <div class="input-row">
         <input type="text" id="userInput" placeholder="Tanya Ai Mi atau upload PR..." autocomplete="off">
     </div>
     <div class="button-row">
-        <button id="sendBtn" class="send-btn">📩 Kirim</button>
-        <label for="fileInput" class="upload-label" id="uploadLabel">📤 Upload PR</label>
+        <button id="sendBtn" class="send-btn">📩 Send</button>
+        <label for="fileInput" class="upload-label" id="uploadLabel">📤 Upload</label>
         <input type="file" id="fileInput" accept="image/*" style="display:none;">
-        <button id="clearInputBtn" class="clear-input-btn">🗑️ Clear Input</button>
+        <button id="clearTextBtn" class="clear-text-btn">🗑️ Clear Text</button>
         <button id="clearHistoryBtn" class="clear-history-btn">🗑️ Clear History</button>
     </div>
-    <div id="manualInputContainer" style="display: none; margin-top: 12px;"></div>
+    <div id="manualInputContainer" style="display: none; margin-top: 10px;"></div>
 </div>
 
 <!-- MODE ORANG TUA -->
 <div class="container hidden" id="parentView">
-    <div id="pinSection"><div class="pin-section"><h2 style="color:#0288d1;">🔒 Akses Orang Tua</h2><p style="margin:10px 0">Masukkan PIN untuk melihat laporan belajar anak</p><input type="password" id="pinInput" maxlength="4" placeholder="1234" inputmode="numeric"><button id="pinLoginBtn">Masuk</button></div></div>
-    <div id="reportSection" class="hidden"><div class="report-card"><div class="flex-between"><h3>📊 Ringkasan Belajar</h3><button id="refreshReportBtn" class="refresh-btn">↻ Refresh</button></div><div id="reportSummary">Memuat data...</div></div><div class="report-card"><h3>💬 Riwayat Chat (20 terbaru)</h3><div id="chatHistory">Memuat...</div></div><button id="waSimulateBtn" class="wa-btn">📱 Kirim Laporan ke WhatsApp (Simulasi)</button><p style="font-size:12px; text-align:center; margin-top:12px;">*Integrasi nyata: ganti dengan API WhatsApp Business</p></div>
+    <div id="pinSection"><div class="pin-section"><h2>🔒 Akses Orang Tua</h2><p>Masukkan PIN untuk melihat laporan belajar anak</p><input type="password" id="pinInput" maxlength="4" placeholder="1234" inputmode="numeric"><button id="pinLoginBtn">Masuk</button></div></div>
+    <div id="reportSection" class="hidden"><div class="report-card"><div class="flex-between"><h3>📊 Ringkasan Belajar</h3><button id="refreshReportBtn" class="refresh-btn">↻ Refresh</button></div><div id="reportSummary">Memuat data...</div></div><div class="report-card"><h3>💬 Riwayat Chat (20 terbaru)</h3><div id="chatHistory">Memuat...</div></div><button id="waSimulateBtn" class="wa-btn">📱 Kirim Laporan ke WhatsApp (Simulasi)</button><p style="font-size:11px; text-align:center; margin-top:10px;">*Integrasi nyata: API WhatsApp Business</p></div>
 </div>
 
 <script>
     // =========================================================
-    // KONFIGURASI & PROMPT FINAL UNTUK SD
+    // 1. KONFIGURASI & DATA PER BAHASA
     // =========================================================
     const USER_ID = 'siswa_001';
+    let currentLanguage = 'id'; // 'id' atau 'en'
+    let currentGrade = '';
+    let currentTopic = '';
+    let currentSubject = 'Matematika'; // default
+    let selectionsMade = false; // apakah sudah memilih grade + topic + subject
+    let chatMessages = [];
+    let isLoading = false;
+    let isParentLogged = false;
+    let currentMode = 'siswa';
+    let contextSent = false;
 
-    // Prompt final untuk Ai Mi (tutor matematika SD) dengan few-shot examples
-    const SYSTEM_PROMPT = `Kamu adalah Ai Mi, tutor matematika untuk siswa SD (kelas 1–6) yang sabar, ramah, dan suka pakai emoji lucu. Tugasmu: MEMBIMBING siswa menemukan jawaban sendiri – BUKAN memberi jawaban langsung.
+    // Data dropdown per bahasa
+    const gradesData = {
+        id: ['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'],
+        en: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6']
+    };
+    // Topik per kelas (contoh, bisa diperluas) - untuk demo, kita buat mapping sederhana
+    const topicsData = {
+        id: {
+            'Kelas 1': ['Bilangan 1-10', 'Penjumlahan', 'Pengurangan', 'Bangun Datar'],
+            'Kelas 2': ['Bilangan 1-100', 'Penjumlahan/Pengurangan', 'Perkalian', 'Pembagian'],
+            'Kelas 3': ['Pecahan sederhana', 'Perkalian/Pembagian', 'Pengukuran', 'Keliling'],
+            'Kelas 4': ['Bilangan besar', 'Operasi campuran', 'KPK/FPB', 'Luas bangun'],
+            'Kelas 5': ['Pecahan', 'Desimal', 'Skala', 'Volume'],
+            'Kelas 6': ['Persamaan sederhana', 'Statistika', 'Bilangan bulat', 'Ujian sekolah']
+        },
+        en: {
+            'Grade 1': ['Numbers 1-10', 'Addition', 'Subtraction', 'Shapes'],
+            'Grade 2': ['Numbers 1-100', 'Add/Subtract', 'Multiplication', 'Division'],
+            'Grade 3': ['Fractions', 'Multiply/Divide', 'Measurement', 'Perimeter'],
+            'Grade 4': ['Large Numbers', 'Mixed Operations', 'LCM/GCD', 'Area'],
+            'Grade 5': ['Fractions', 'Decimals', 'Scale', 'Volume'],
+            'Grade 6': ['Simple Equations', 'Statistics', 'Integers', 'Final Review']
+        }
+    };
+    const subjectsData = {
+        id: [{value:'Matematika', label:'📐 Matematika', disabled:false},
+             {value:'Fisika', label:'⚛️ Fisika', disabled:true},
+             {value:'Biologi', label:'🧬 Biologi', disabled:true}],
+        en: [{value:'Mathematics', label:'📐 Mathematics', disabled:false},
+             {value:'Physics', label:'⚛️ Physics', disabled:true},
+             {value:'Biology', label:'🧬 Biology', disabled:true}]
+    };
+
+    // System Prompts (ID dan EN) – final untuk SD dengan few-shot
+    const PROMPT_ID = `Kamu adalah Ai Mi, tutor matematika untuk siswa SD (kelas 1–6) yang sabar, ramah, dan suka pakai emoji lucu. Tugasmu: MEMBIMBING siswa menemukan jawaban sendiri – BUKAN memberi jawaban langsung.
 
 🚫 LARANGAN UTAMA (WAJIB):
 1. JANGAN pernah memberi jawaban akhir langsung.
@@ -393,478 +466,402 @@
 4. JANGAN bilang "salah" tanpa petunjuk (pakai "hampir, coba lagi" atau beri emoticon 🥲).
 
 ✅ ATURAN UMUM:
-- Gunakan analogi dengan benda-benda yang anak SD suka. Pakai emoji setiap kali menjelaskan: 🍎🍬🍭 permen, kue, pizza, 🎈 balon, jari, 🧸 boneka, 🪙 uang logam, 🍕 potongan pizza, 🧩 puzzle.
+- Gunakan analogi dengan benda-benda yang anak SD suka: 🍬 permen, 🍕 pizza, 🎈 balon, 🧸 boneka, 🪙 uang logam.
 - Satu soal satu waktu. Selesaikan dulu baru lanjut.
-- Jika siswa memberi beberapa soal: "Wah, ada beberapa soal ya. Kita kerjakan satu per satu ya. Mulai dari nomor 1, boleh? 😊"
 - Awali setiap jawaban dengan: "Hi! Ai Mi di sini~ 💕"
 
-📘 MODE PR (jika siswa minta bantuan PR):
-1. Minta langkah pertama. Tunggu jawaban.
-2. Benar → puji pakai emoji (🎉👍😊), minta langkah berikutnya.
-3. Salah → beri petunjuk dengan analogi lain dan emoji penyemangat (🥲 "Hampir, coba lihat lagi...").
-4. Setelah siswa memberi JAWABAN AKHIR, RINGKAS cara penyelesaian pakai emoji.
-5. Tanyakan: "Apakah kamu sudah paham? 😊 Kalau sudah, lanjut soal berikutnya ya."
-6. Setelah semua PR selesai: "Hebat! 🎉 Mau latihan soal lagi? Ai Mi tunggu~"
+📘 MODE PR: Minta langkah pertama, beri petunjuk jika salah, setelah jawaban akhir RINGKAS penyelesaian, tanyakan paham, lalu lanjut.
+📘 MODE LATIHAN: Jelaskan materi, beri 3 contoh (mudah, sedang, sulit), lalu latihan 3 tingkat (@5 soal) satu per satu, nilai pakai bintang ⭐.
+📘 MODE ROADMAP: Berikan daftar bab per semester.
 
-📘 MODE LATIHAN (jika siswa minta latihan):
-1. Penjelasan singkat materi + rumus utama (pakai emoji: 📖 rumus, 🧮 hitung).
-2. Beri 3 contoh soal (mudah, sedang, sulit) dengan penyelesaian (pakai 🟢 mudah, 🟡 sedang, 🔴 sulit).
-3. Latihan: 3 tingkat (@5 soal). Beri satu per satu. Feedback: benar → puji (✅👍); salah → petunjuk (❌ coba lagi).
-4. Nilai per tingkat = (benar/5)×100. Tampilkan dalam bentuk emoji bintang: ⭐⭐⭐ untuk 80+, ⭐⭐ untuk 60-79, ⭐ untuk <60.
-5. Jika siswa frustrasi (3x salah sama), tawarkan jeda: "Kita istirahat sebentar? 🧸 Nanti Ai Mi jelaskan dengan cara lain ya."
-
-📘 MODE ROADMAP (jika siswa minta persiapan naik kelas):
-- Berikan daftar bab per semester sesuai kelas (pakai emoji kalender 📅, buku 📚).
-- Tanyakan: "Ini peta jalan belajarmu. Siap mulai? Sebutkan 'Mulai' ya~ 🚀"
-
-🟢 SALAM PEMBUKA (pertama kali chat):
+🟢 SALAM PEMBUKA: 
 "Hi! 🌸 Aku Ai Mi, tutor matematika SD yang seru dan sabar. Ada yang bisa aku bantu?
-1️⃣ Ada PR yang ingin dikerjakan? (Tulis soal atau upload foto 📸)
-2️⃣ Mau latihan soal biar nilai rapormu bagus? 📚
-3️⃣ Mau roadmap belajar naik kelas? 🗺️
-Kita jalan step by step. Pilih nomor berapa? 😊"
+1️⃣ Ada PR? (tulis atau upload foto 📸)
+2️⃣ Latihan soal 📚
+3️⃣ Roadmap naik kelas 🗺️
+Pilih nomor berapa? 😊"
 
-🧪 CONTOH Mode PR (yang benar untuk SD):
+🧪 CONTOH (PR):
 Siswa: "7 + 8 = ?"
-Ai Mi: "Hi, Ai Mi di sini~ 💕 Bayangkan kamu punya 7 permen 🍬, lalu Ayah memberi 8 permen lagi 🍬🍬. Berapa total permenmu sekarang? Coba hitung pakai jari atau gambar ya 🖐️."
+Ai Mi: "Hi! Bayangkan kamu punya 7 permen 🍬, lalu Ayah memberi 8 permen lagi. Berapa total permenmu? Coba hitung pakai jari."
 Siswa: "15"
-Ai Mi: "Hebat! ✅🥳 Jadi langkahnya: 7 permen + 8 permen = 15 permen. Apakah kamu paham? Kalau sudah, kita lanjut soal berikutnya ya. 🎉"
+Ai Mi: "Hebat! ✅ Jadi 7 + 8 = 15. Apakah kamu paham?"
 
-🧪 CONTOH Mode Latihan (yang benar untuk SD):
-Siswa: "Aku mau latihan penjumlahan."
-Ai Mi: "Oke! Kita mulai dari yang mudah dulu ya 🟢. Soal 1: 4 + 3 = ? Coba hitung pakai jari atau gambar. 🖐️"
-Siswa: "7"
-Ai Mi: "Benar! ✅ Bagus. Soal 2: 9 + 2 = ?"
-Siswa: "11"
-Ai Mi: "Hebat! ✅ Kamu sudah bisa 2 soal. Lanjut soal 3 ya..."
-(setelah 5 soal) Ai Mi: "Nilai kamu untuk tingkat mudah: 100 ⭐⭐⭐. Mau lanjut ke tingkat sedang? 🟡"
+❌ JANGAN: memberi jawaban langsung atau langkah lengkap.
 
-🧪 CONTOH Siswa Salah (yang benar untuk SD):
-Siswa: "8 + 5 = 12"
-Ai Mi: "Hampir, coba lihat lagi ya 🥲. Bayangkan kamu punya 8 permen 🍬, lalu teman memberi 5 permen lagi 🍬🍬. Coba hitung perlahan: 8... 9, 10, 11, 12, 13. Berapa totalnya?"
-Siswa: "13"
-Ai Mi: "Nah, betul! ✅ Jadi 8 + 5 = 13. Kamu pasti bisa! 🎉"
+🔁 PENUTUP: Kamu teman belajar yang sabar, bukan pemberi jawaban. Pakai emoji. 💕`;
 
-🧪 CONTOH YANG SALAH (jangan lakukan):
-❌ "Jawabannya 15" (tanpa bimbingan)
-❌ "7+8=15" (langsung kasih hasil)
-❌ Memberi latihan sebelum PR selesai.
+    const PROMPT_EN = `You are Ai Mi, a patient and friendly elementary math tutor (grades 1-6). Your task: GUIDE students to find answers themselves – NOT give direct answers.
 
-🔁 PENUTUP: Kamu adalah teman belajar yang sabar, bukan tukang jawaban. Pakai emoji biar anak senang. Tujuan akhir: anak paham dan percaya diri. 💕`;
+🚫 MAIN RULES:
+1. NEVER give the final answer directly.
+2. NEVER give all steps at once.
+3. NEVER give exercises before all homework is done.
+4. NEVER just say "wrong" without a clue (use "almost, try again" or 🥲).
 
-    // =========================================================
-    // DATA TOPIK PER KELAS SD (sesuai kurikulum)
-    // =========================================================
-    const topicsByGrade = {
-        "Kelas 1": ["Bilangan 1–10", "Penjumlahan dasar", "Pengurangan dasar", "Bentuk bangun datar", "Pola bilangan sederhana", "Pengukuran panjang (tidak baku)"],
-        "Kelas 2": ["Bilangan 1–100", "Penjumlahan & pengurangan", "Perkalian dasar (1–5)", "Pembagian dasar (1–5)", "Satuan waktu (jam, menit)", "Uang (pecahan rupiah)"],
-        "Kelas 3": ["Bilangan 1–1000", "Penjumlahan & pengurangan (1–1000)", "Perkalian & pembagian (1–10)", "Pecahan sederhana", "Pengukuran panjang (cm, m)", "Keliling bangun datar"],
-        "Kelas 4": ["Bilangan besar", "Operasi hitung campuran", "Kelipatan & faktor (KPK/FPB)", "Pecahan senilai", "Desimal & persen", "Luas bangun datar", "Sudut"],
-        "Kelas 5": ["Penjumlahan & pengurangan pecahan", "Perkalian & pembagian pecahan", "Perkalian & pembagian desimal", "Skala & perbandingan", "Volume kubus & balok", "Jaring-jaring bangun ruang", "Kecepatan & debit"],
-        "Kelas 6": ["Operasi pecahan & desimal", "Perbandingan & skala", "Bilangan bulat (negatif)", "Luas & volume bangun ruang (tabung, kerucut)", "Statistika dasar (mean, median, modus)", "Pengolahan data (diagram)", "Persamaan sederhana", "Ujian sekolah"]
-    };
+✅ GENERAL:
+- Use analogies with candies 🍬, pizza 🍕, balloon 🎈, doll 🧸, coins 🪙.
+- One question at a time. Finish first, then continue.
+- Start each response with: "Hi! Ai Mi is here~ 💕"
 
-    // =========================================================
-    // STATE & DOM ELEMENTS
-    // =========================================================
-    let chatMessages = [];
-    let isLoading = false;
-    let currentMode = 'siswa';
-    let isParentLogged = false;
-    let contextSent = false;
-    let currentGrade = null;
-    let currentTopic = null;
+📘 HOMEWORK MODE: Ask first step, give clues if wrong, after final answer SUMMARIZE, ask if understood, then next.
+📘 PRACTICE MODE: Explain topic, give 3 examples (easy 🟢, medium 🟡, hard 🔴), then 3 levels (5 each) one by one, score with stars ⭐.
+📘 ROADMAP MODE: Give chapter list per semester.
 
+🟢 GREETING:
+"Hi! 🌸 I'm Ai Mi, your fun and patient elementary math tutor. How can I help?
+1️⃣ Homework? (write or upload photo 📸)
+2️⃣ Practice to improve grades 📚
+3️⃣ Learning roadmap to pass 🗺️
+Choose a number! 😊"
+
+🧪 EXAMPLE (Homework):
+Student: "7 + 8 = ?"
+Ai Mi: "Hi! Imagine you have 7 candies 🍬, then dad gives 8 more. How many total? Count with fingers."
+Student: "15"
+Ai Mi: "Great! ✅ So 7 + 8 = 15. Do you understand?"
+
+❌ DON'T: give direct answer or all steps at once.
+
+🔁 CLOSING: You are a patient learning friend, not an answer giver. Use emojis. 💕`;
+
+    // DOM elements
     const studentView = document.getElementById('studentView');
     const parentView = document.getElementById('parentView');
     const chatBox = document.getElementById('chatBox');
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
-    const subjectSelect = document.getElementById('subjectSelect');
     const fileInput = document.getElementById('fileInput');
     const uploadLabel = document.getElementById('uploadLabel');
-    const clearInputBtn = document.getElementById('clearInputBtn');
+    const clearTextBtn = document.getElementById('clearTextBtn');
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
     const gradeSelect = document.getElementById('gradeSelect');
     const topicSelect = document.getElementById('topicSelect');
+    const subjectSelect = document.getElementById('subjectSelect');
+    const selectionPanel = document.getElementById('selectionPanel');
+    const summaryChip = document.getElementById('summaryChip');
+    const chipText = document.getElementById('chipText');
+    const editBtn = document.getElementById('editSelectionBtn');
 
-    // Helper functions
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
-    }
-    function renderMarkdown(text) {
-        let safe = escapeHtml(text);
-        safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        safe = safe.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        safe = safe.replace(/\n/g, '<br>');
-        return safe;
-    }
-    function appendChat(role, text, isSystem = false) {
-        const div = document.createElement('div');
-        div.className = `msg ${role}`;
+    // Helper: escape, render, appendChat, showSystemMessage, loading
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
+    function renderMarkdown(text) { return escapeHtml(text).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>'); }
+    function appendChat(role, text, isSystem=false) {
+        const div = document.createElement('div'); div.className = `msg ${role}`;
         if (isSystem) div.classList.add('system-info');
-        if (role === 'ai') div.innerHTML = renderMarkdown(text);
-        else div.textContent = text;
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
+        if (role === 'ai') div.innerHTML = renderMarkdown(text); else div.textContent = text;
+        chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight;
     }
-    function showSystemMessage(msg) {
-        appendChat('system-info', msg, true);
-    }
+    function showSystemMessage(msg) { appendChat('system-info', msg, true); }
     let loadingDiv = null;
-    function showLoading() {
-        if (loadingDiv) loadingDiv.remove();
-        loadingDiv = document.createElement('div');
-        loadingDiv.className = 'msg ai loading-indicator';
-        loadingDiv.textContent = '💕 Ai Mi sedang mengetik jawaban untukmu...';
-        chatBox.appendChild(loadingDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-    function hideLoading() { if (loadingDiv) { loadingDiv.remove(); loadingDiv = null; } }
+    function showLoading() { if(loadingDiv) loadingDiv.remove(); loadingDiv = document.createElement('div'); loadingDiv.className = 'msg ai loading-indicator'; loadingDiv.textContent = '💕 Ai Mi sedang mengetik...'; chatBox.appendChild(loadingDiv); chatBox.scrollTop = chatBox.scrollHeight; }
+    function hideLoading() { if(loadingDiv) { loadingDiv.remove(); loadingDiv = null; } }
 
-    // ========== DROPDOWN TOPIK DINAMIS ==========
+    // ========== UPDATE DROPDOWN BERDASARKAN BAHASA ==========
+    function updateDropdowns() {
+        // Grade
+        const grades = gradesData[currentLanguage];
+        gradeSelect.innerHTML = '<option value="" disabled selected>-- ' + (currentLanguage==='id'?'Pilih Kelas':'Select Grade') + ' --</option>';
+        grades.forEach(g => { gradeSelect.innerHTML += `<option value="${g}">${g}</option>`; });
+        // Subject
+        const subjects = subjectsData[currentLanguage];
+        subjectSelect.innerHTML = '';
+        subjects.forEach(sub => {
+            const opt = document.createElement('option');
+            opt.value = sub.value;
+            opt.textContent = sub.label;
+            opt.disabled = sub.disabled;
+            subjectSelect.appendChild(opt);
+        });
+        // Topic akan di-update saat grade berubah
+        updateTopicDropdown();
+    }
+
     function updateTopicDropdown() {
         const grade = gradeSelect.value;
         if (!grade || grade === "") {
             topicSelect.disabled = true;
-            topicSelect.innerHTML = '<option value="" disabled selected>-- Pilih Topik --</option>';
+            topicSelect.innerHTML = '<option value="" disabled selected>-- ' + (currentLanguage==='id'?'Pilih Topik':'Select Topic') + ' --</option>';
             return;
         }
-        const topics = topicsByGrade[grade] || [];
+        const topics = topicsData[currentLanguage][grade] || [];
         topicSelect.disabled = false;
-        let options = '<option value="" disabled selected>-- Pilih Topik --</option>';
-        options += '<option value="bebas">🌸 Bebas (semua topik)</option>';
-        topics.forEach(topic => {
-            options += `<option value="${topic}">${topic}</option>`;
-        });
+        let options = '<option value="" disabled selected>-- ' + (currentLanguage==='id'?'Pilih Topik':'Select Topic') + ' --</option>';
+        topics.forEach(t => { options += `<option value="${t}">${t}</option>`; });
         topicSelect.innerHTML = options;
     }
 
-    // ========== KIRIM KONTEKS KE AI (tersembunyi) ==========
-    async function sendContextToAI() {
-        const grade = currentGrade;
-        const topic = currentTopic;
-        if (!grade || !topic) return;
-        let jenjang = grade; // "Kelas 1", "Kelas 2", ...
-        let contextMessage = `Siswa kelas: ${jenjang} SD, topik pilihan: ${topic}. Gunakan analogi untuk siswa SD (permen, kue, balon, boneka, uang logam).`;
-        if (topic === "bebas") {
-            contextMessage = `Siswa kelas: ${jenjang} SD, topik: bebas (tidak ada batasan topik). Bantu soal apapun dengan analogi SD.`;
+    // ========== SAAT USER MEMILIH SEMUA (grade, topic, subject) ==========
+    function checkAllSelected() {
+        const grade = gradeSelect.value;
+        const topic = topicSelect.value;
+        const subject = subjectSelect.value;
+        if (grade && topic && subject && grade !== "" && topic !== "") {
+            selectionsMade = true;
+            currentGrade = grade;
+            currentTopic = topic;
+            currentSubject = subject;
+            // Sembunyikan panel dropdown, tampilkan chip
+            selectionPanel.classList.add('hidden');
+            summaryChip.classList.remove('hidden');
+            // Update chip text
+            let subjectLabel = subject;
+            if (currentLanguage === 'id') subjectLabel = subject === 'Matematika' ? '📐 Matematika' : subject;
+            else subjectLabel = subject === 'Mathematics' ? '📐 Mathematics' : subject;
+            chipText.innerHTML = `${subjectLabel} · ${grade} · ${topic}`;
+            // Kirim konteks ke AI (hidden) dan tampilkan salam pembuka (jika belum ada chat)
+            sendContextAndGreeting();
+        } else {
+            // Jika belum lengkap, tetap tampilkan panel
+            selectionPanel.classList.remove('hidden');
+            summaryChip.classList.add('hidden');
+            selectionsMade = false;
         }
-        // simpan sebagai system message (tidak tampil di UI)
-        chatMessages.unshift({ role: 'system', content: contextMessage });
-        console.log('Context sent (hidden)');
     }
 
-    // ========== LOAD RIWAYAT CHAT DARI SUPABASE ==========
+    async function sendContextAndGreeting() {
+        if (!selectionsMade) return;
+        // Konteks tersembunyi
+        let context = `Siswa kelas: ${currentGrade}, topik: ${currentTopic}, mata pelajaran: ${currentSubject}. Gunakan analogi untuk SD.`;
+        if (currentLanguage === 'en') context = `Student grade: ${currentGrade}, topic: ${currentTopic}, subject: ${currentSubject}. Use analogies for elementary school.`;
+        chatMessages.unshift({ role: 'system', content: context });
+        // Kirim salam pembuka (jika belum ada chat history)
+        if (chatMessages.filter(m => m.role === 'user' || m.role === 'assistant').length === 0) {
+            await askAiForGreeting();
+        }
+    }
+
+    async function askAiForGreeting() {
+        const greetingPrompt = { role: 'user', content: 'Halo Ai Mi, saya siap belajar. Tolong sapa saya dengan salam pembuka dan beri pilihan.' };
+        const tempMessages = [...chatMessages, greetingPrompt];
+        try {
+            const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: tempMessages }) });
+            const data = await response.json();
+            if (data.reply) {
+                appendChat('ai', data.reply);
+                chatMessages.push({ role: 'assistant', content: data.reply });
+                saveChatToSupabase(greetingPrompt.content, data.reply);
+            } else {
+                const fallback = currentLanguage === 'id' ? "Hi! 🌸 Aku Ai Mi... Pilih nomor 1,2,3 ya." : "Hi! 🌸 I'm Ai Mi... Choose 1,2,3.";
+                appendChat('ai', fallback);
+                chatMessages.push({ role: 'assistant', content: fallback });
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function saveChatToSupabase(userMsg, aiMsg) {
+        try {
+            await fetch('/api/save-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: USER_ID, user_message: userMsg, ai_message: aiMsg, subject: subjectSelect.value }) });
+        } catch(e) { console.warn(e); }
+    }
+
+    // ========== LOAD CHAT HISTORY DARI SUPABASE ==========
     async function loadChatHistory() {
         try {
             const response = await fetch(`/api/report?user_id=${USER_ID}`);
             if (!response.ok) return;
             const data = await response.json();
-            if (!data.chats || data.chats.length === 0) return;
-            // Urutkan dari yang paling lama ke baru agar tampil sesuai
+            if (!data.chats || data.charts?.length === 0) return;
             const chats = data.chats.reverse();
-            // Hapus pesan system awal
             while (chatBox.children.length > 0) chatBox.removeChild(chatBox.firstChild);
-            // Tampilkan semua pesan
             for (const chat of chats) {
                 appendChat('user', chat.user_message);
                 appendChat('ai', chat.ai_message);
                 chatMessages.push({ role: 'user', content: chat.user_message });
                 chatMessages.push({ role: 'assistant', content: chat.ai_message });
             }
-            contextSent = true; // karena sudah ada riwayat, tidak perlu kirim konteks lagi
-            // Scroll ke bawah
             chatBox.scrollTop = chatBox.scrollHeight;
-        } catch (err) {
-            console.warn('Gagal memuat riwayat:', err);
-        }
+        } catch(err) { console.warn(err); }
     }
 
-    // ========== RESET SESI (Clear History) ==========
+    // ========== CLEAR HISTORY ==========
     async function clearHistory() {
-        // Hapus semua chat di UI
         while (chatBox.children.length > 0) chatBox.removeChild(chatBox.firstChild);
         chatMessages = [];
-        contextSent = false;
-        // Tampilkan pesan default
-        appendChat('system-info', '🌸 Hi! Aku Ai Mi, tutor matematika SD yang sabar. Silakan pilih kelas dan topik di atas untuk memulai. 🌸', true);
-        // Jika kelas dan topik sudah terisi, kita reset konteks dan kirim salam pembuka lagi
-        if (gradeSelect.value && gradeSelect.value !== "" && topicSelect.value && topicSelect.value !== "") {
-            currentGrade = gradeSelect.value;
-            currentTopic = topicSelect.value;
-            await sendContextToAI();
-            contextSent = true;
-            await askAiForGreeting();
+        if (selectionsMade) {
+            // reset konteks, kirim ulang salam
+            await sendContextAndGreeting();
+        } else {
+            appendChat('system-info', '🌸 Silakan pilih kelas, topik, dan mata pelajaran terlebih dahulu.', true);
         }
     }
 
-    // ========== MINTA SALAM PEMBUKA DARI AI ==========
-    async function askAiForGreeting() {
-        const greetingPrompt = { role: 'user', content: 'Halo Ai Mi, saya siap belajar. Tolong sapa saya dengan salam pembuka dan beri pilihan 1, 2, atau 3.' };
-        const tempMessages = [...chatMessages, greetingPrompt];
-        try {
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messages: tempMessages })
-            });
-            const data = await response.json();
-            if (data.reply) {
-                appendChat('ai', data.reply);
-                chatMessages.push({ role: 'assistant', content: data.reply });
-                await saveChatToSupabase(greetingPrompt.content, data.reply);
-            } else {
-                const fallback = "Hi! 🌸 Aku Ai Mi, tutor matematika SD yang seru dan sabar. Ada yang bisa aku bantu?\n1️⃣ Ada PR? (tulis atau upload foto 📸)\n2️⃣ Latihan soal 📚\n3️⃣ Roadmap naik kelas 🗺️\nPilih nomor berapa? 😊";
-                appendChat('ai', fallback);
-                chatMessages.push({ role: 'assistant', content: fallback });
-            }
-        } catch (err) {
-            console.error(err);
-            const fallback = "Hi! 🌸 Aku Ai Mi, tutor matematika SD... Pilih nomor 1, 2, atau 3 ya.";
-            appendChat('ai', fallback);
-            chatMessages.push({ role: 'assistant', content: fallback });
-        }
-    }
-
-    async function saveChatToSupabase(userMsg, aiMsg) {
-        try {
-            await fetch('/api/save-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: USER_ID,
-                    user_message: userMsg,
-                    ai_message: aiMsg,
-                    subject: subjectSelect.value
-                })
-            });
-        } catch(e) { console.warn(e); }
-    }
-
-    // ========== KOMPRESI GAMBAR & OCR ==========
-    async function compressImage(file, maxWidth = 1024, quality = 0.8) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    if (width > maxWidth) {
-                        height = (height * maxWidth) / width;
-                        width = maxWidth;
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    canvas.toBlob(function(blob) {
-                        resolve(blob);
-                    }, 'image/jpeg', quality);
+    // ========== UPLOAD & OCR (sama seperti sebelumnya) ==========
+    async function compressImage(file, maxWidth=1024, quality=0.8) {
+        return new Promise((resolve,reject)=>{
+            const reader=new FileReader();
+            reader.onload=function(e){
+                const img=new Image();
+                img.onload=function(){
+                    const canvas=document.createElement('canvas');
+                    let w=img.width, h=img.height;
+                    if(w>maxWidth){ h=(h*maxWidth)/w; w=maxWidth; }
+                    canvas.width=w; canvas.height=h;
+                    const ctx=canvas.getContext('2d');
+                    ctx.drawImage(img,0,0,w,h);
+                    canvas.toBlob(blob=>resolve(blob),'image/jpeg',quality);
                 };
-                img.onerror = reject;
-                img.src = e.target.result;
+                img.onerror=reject;
+                img.src=e.target.result;
             };
-            reader.onerror = reject;
+            reader.onerror=reject;
             reader.readAsDataURL(file);
         });
     }
-
-    function normalizeMathNotation(text) {
-        if (!text) return '';
-        let result = text;
-        result = result.replace(/²/g, '^2').replace(/³/g, '^3');
-        result = result.replace(/([a-zA-Z])(\d+)/g, '$1^$2');
-        result = result.replace(/\b([xX])\s*-\s*(\d+[xX])/g, '$1^2 - $2');
-        result = result.replace(/\b([xX])\s+-\s+(\d+[xX])/g, '$1^2 - $2');
-        return result.trim();
+    function normalizeMathNotation(text){
+        if(!text) return '';
+        return text.replace(/²/g,'^2').replace(/³/g,'^3').replace(/([a-zA-Z])(\d+)/g,'$1^$2').replace(/\b([xX])\s*-\s*(\d+[xX])/g,'$1^2 - $2');
     }
-
-    async function extractTextWithOcrSpace(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const base64 = e.target.result;
-                try {
-                    const response = await fetch('/api/ocr', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ imageBase64: base64 })
-                    });
-                    const data = await response.json();
-                    if (!response.ok) reject(new Error(data.error || 'OCR gagal'));
-                    else if (!data.text || data.text.trim().length < 5) reject(new Error('Teks tidak terbaca'));
+    async function extractTextWithOcrSpace(file){
+        return new Promise((resolve,reject)=>{
+            const reader=new FileReader();
+            reader.onload=async function(e){
+                const base64=e.target.result;
+                try{
+                    const response=await fetch('/api/ocr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageBase64:base64})});
+                    const data=await response.json();
+                    if(!response.ok) reject(new Error(data.error||'OCR gagal'));
+                    else if(!data.text||data.text.trim().length<5) reject(new Error('Teks tidak terbaca'));
                     else resolve(data.text);
-                } catch (err) { reject(err); }
+                }catch(err){ reject(err); }
             };
-            reader.onerror = reject;
+            reader.onerror=reject;
             reader.readAsDataURL(file);
         });
     }
-
-    function showManualInputButton() {
-        const manualContainer = document.getElementById('manualInputContainer');
-        manualContainer.innerHTML = `<button id="manualTriggerBtn" class="manual-label" style="margin-top:8px;">✍️ Tulis Soal Manual</button>`;
-        manualContainer.style.display = 'block';
-        document.getElementById('manualTriggerBtn')?.addEventListener('click', () => {
-            userInput.value = '✍️ [Tulis soal di sini, contoh: 7 + 8 = ?]';
+    function showManualInputButton(){
+        const manualContainer=document.getElementById('manualInputContainer');
+        manualContainer.innerHTML=`<button id="manualTriggerBtn" class="manual-label">✍️ Tulis Soal Manual</button>`;
+        manualContainer.style.display='block';
+        document.getElementById('manualTriggerBtn')?.addEventListener('click',()=>{
+            userInput.value='✍️ [Tulis soal di sini, contoh: 7 + 8 = ?]';
             userInput.focus();
-            manualContainer.style.display = 'none';
+            manualContainer.style.display='none';
         });
     }
-
-    // Upload file
-    fileInput.addEventListener('change', async function(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        if (isLoading) { showSystemMessage('⏳ Tunggu, Ai Mi masih menjawab.'); fileInput.value = ''; return; }
+    fileInput.addEventListener('change', async function(event){
+        const file=event.target.files[0];
+        if(!file) return;
+        if(isLoading){ showSystemMessage('⏳ Tunggu sebentar...'); fileInput.value=''; return; }
         uploadLabel.classList.add('disabled');
-        showSystemMessage('📸 Memproses gambar... (kompresi & OCR)');
-        try {
-            const compressedFile = await compressImage(file, 1024, 0.8);
+        showSystemMessage('📸 Memproses gambar...');
+        try{
+            const compressed=await compressImage(file,1024,0.8);
             showSystemMessage('📸 Gambar dikompres. Kirim ke server OCR...');
-            let extractedText = await extractTextWithOcrSpace(compressedFile);
-            extractedText = normalizeMathNotation(extractedText);
-            const cleanText = extractedText.replace(/[^a-zA-Z0-9+\-*/^=()xX\s]/g, '');
-            if (cleanText.length < 10) { showSystemMessage('⚠️ Teks tidak terbaca jelas. Silakan tulis manual.'); showManualInputButton(); uploadLabel.classList.remove('disabled'); fileInput.value = ''; return; }
-            showSystemMessage(`📖 Teks terbaca (dinormalisasi):\n${extractedText.substring(0, 300)}${extractedText.length > 300 ? '...' : ''}`);
-            userInput.value = `Soal:\n${extractedText}`;
+            let text=await extractTextWithOcrSpace(compressed);
+            text=normalizeMathNotation(text);
+            if(text.replace(/[^a-zA-Z0-9+\-*/^=()xX\s]/g,'').length<10){ showSystemMessage('⚠️ Teks tidak terbaca jelas. Silakan tulis manual.'); showManualInputButton(); uploadLabel.classList.remove('disabled'); fileInput.value=''; return; }
+            showSystemMessage(`📖 Teks terbaca:\n${text.substring(0,300)}${text.length>300?'...':''}`);
+            userInput.value=`Soal:\n${text}`;
             await sendMessage(true);
-        } catch (err) { showSystemMessage(`💥 Gagal: ${err.message}. Coba foto jelas atau tulis manual.`); showManualInputButton(); }
-        finally { uploadLabel.classList.remove('disabled'); fileInput.value = ''; }
+        }catch(err){ showSystemMessage(`💥 Gagal: ${err.message}. Coba foto jelas.`); showManualInputButton(); }
+        finally{ uploadLabel.classList.remove('disabled'); fileInput.value=''; }
     });
 
-    // Kirim pesan (tanpa auto-focus)
-    async function sendMessage(skipClear = false) {
-        let message = userInput.value.trim();
-        if (!message || isLoading) return;
-        message = normalizeMathNotation(message);
-        isLoading = true;
-        sendBtn.disabled = true;
-        userInput.disabled = true;
-        uploadLabel.style.pointerEvents = 'none';
-        appendChat('user', message);
-        chatMessages.push({ role: 'user', content: message });
-        if (!skipClear) userInput.value = '';
+    async function sendMessage(skipClear=false){
+        let message=userInput.value.trim();
+        if(!message||isLoading) return;
+        message=normalizeMathNotation(message);
+        isLoading=true;
+        sendBtn.disabled=true;
+        userInput.disabled=true;
+        uploadLabel.style.pointerEvents='none';
+        appendChat('user',message);
+        chatMessages.push({role:'user',content:message});
+        if(!skipClear) userInput.value='';
         showLoading();
-        try {
-            const chatResponse = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messages: chatMessages })
-            });
-            const chatData = await chatResponse.json();
+        try{
+            const systemPrompt = currentLanguage === 'id' ? PROMPT_ID : PROMPT_EN;
+            const finalMessages = [{role:'system',content:systemPrompt}, ...chatMessages];
+            const chatResponse=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:finalMessages})});
+            const chatData=await chatResponse.json();
             hideLoading();
-            if (!chatResponse.ok) {
-                const errorMsg = chatData.error || 'Ai Mi sedang kelelahan.';
-                appendChat('ai', `💕 Maaf, ${errorMsg}`);
-                chatMessages.push({ role: 'assistant', content: errorMsg });
-                return;
-            }
-            const aiReply = chatData.reply || 'Maaf, Ai Mi tidak bisa menjawab.';
-            appendChat('ai', aiReply);
-            chatMessages.push({ role: 'assistant', content: aiReply });
-            await fetch('/api/save-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: USER_ID,
-                    user_message: message,
-                    ai_message: aiReply,
-                    subject: subjectSelect.value
-                })
-            });
-        } catch (err) {
-            hideLoading();
-            console.error(err);
-            appendChat('ai', '💕 Gangguan jaringan. Coba lagi.');
-        } finally {
-            isLoading = false;
-            sendBtn.disabled = false;
-            userInput.disabled = false;
-            uploadLabel.style.pointerEvents = 'auto';
-            // JANGAN auto-focus userInput (agar keyboard tidak muncul otomatis)
-            // userInput.focus();   // DIHAPUS
-        }
+            if(!chatResponse.ok){ const errMsg=chatData.error||'Ai Mi kelelahan.'; appendChat('ai',`💕 Maaf, ${errMsg}`); chatMessages.push({role:'assistant',content:errMsg}); return; }
+            const aiReply=chatData.reply||'Maaf, Ai Mi tidak bisa menjawab.';
+            appendChat('ai',aiReply);
+            chatMessages.push({role:'assistant',content:aiReply});
+            await fetch('/api/save-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:USER_ID,user_message:message,ai_message:aiReply,subject:subjectSelect.value})});
+        }catch(err){ hideLoading(); console.error(err); appendChat('ai','💕 Gangguan jaringan. Coba lagi.'); }
+        finally{ isLoading=false; sendBtn.disabled=false; userInput.disabled=false; uploadLabel.style.pointerEvents='auto'; /* no auto-focus */ }
     }
 
-    // ========== LAPORAN ORANG TUA ==========
-    async function loadParentReport() {
-        const summaryDiv = document.getElementById('reportSummary');
-        const historyDiv = document.getElementById('chatHistory');
-        summaryDiv.innerHTML = 'Mengambil data...';
-        historyDiv.innerHTML = 'Memuat...';
-        try {
-            const response = await fetch(`/api/report?user_id=${USER_ID}`);
-            if (!response.ok) throw new Error('Gagal mengambil data');
-            const data = await response.json();
-            if (!data.chats || data.chats.length === 0) {
-                summaryDiv.innerHTML = 'Belum ada percakapan. Ayo ajak anak belajar dengan Ai Mi!';
-                historyDiv.innerHTML = '<div class="chat-history-item">Kosong.</div>';
-                return;
-            }
-            const chats = data.chats;
-            let totalMessages = chats.length;
-            let subjectCount = {};
-            let lastActive = new Date(chats[0].timestamp).toLocaleString('id-ID');
-            for (let c of chats) {
-                let subj = c.subject || 'Matematika SD';
-                subjectCount[subj] = (subjectCount[subj] || 0) + 1;
-            }
-            let topSubject = Object.entries(subjectCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'Matematika SD';
-            summaryDiv.innerHTML = `<p>📌 <strong>Total percakapan:</strong> ${totalMessages} pesan</p><p>📚 <strong>Pelajaran favorit:</strong> ${topSubject}</p><p>🕒 <strong>Terakhir aktif:</strong> ${lastActive}</p><p>🌟 <strong>Guru Ai Mi</strong> selalu membimbing tanpa jawaban instan.</p>`;
-            const recent = chats.slice(0, 20);
-            historyDiv.innerHTML = recent.map(c => `<div class="chat-history-item"><div><strong>🧑‍🎓 Siswa:</strong> ${escapeHtml(c.user_message?.substring(0, 150) || '')}</div><div><strong>🤖 Ai Mi:</strong> ${escapeHtml(c.ai_message?.substring(0, 120) || '')}...</div><div style="font-size:0.7rem; color:#6c8ea0;">📅 ${new Date(c.timestamp).toLocaleString('id-ID')} · ${c.subject}</div></div>`).join('');
-            if (chats.length > 20) historyDiv.innerHTML += `<div class="chat-history-item">... dan ${chats.length - 20} lainnya</div>`;
-        } catch (err) {
-            console.error(err);
-            summaryDiv.innerHTML = 'Gagal memuat laporan. Pastikan backend /api/report sudah dibuat.';
-            historyDiv.innerHTML = '<div>Error loading data</div>';
-        }
+    // ========== ORANG TUA ==========
+    async function loadParentReport(){
+        const summaryDiv=document.getElementById('reportSummary');
+        const historyDiv=document.getElementById('chatHistory');
+        summaryDiv.innerHTML='Mengambil data...'; historyDiv.innerHTML='Memuat...';
+        try{
+            const response=await fetch(`/api/report?user_id=${USER_ID}`);
+            if(!response.ok) throw new Error('Gagal');
+            const data=await response.json();
+            if(!data.chats||data.chats.length===0){ summaryDiv.innerHTML='Belum ada percakapan.'; historyDiv.innerHTML='<div>Kosong.</div>'; return; }
+            const chats=data.chats;
+            let total=chats.length, subjCount={}, lastActive=new Date(chats[0].timestamp).toLocaleString('id-ID');
+            for(let c of chats){ let s=c.subject||'Matematika'; subjCount[s]=(subjCount[s]||0)+1; }
+            let topSubject=Object.entries(subjCount).sort((a,b)=>b[1]-a[1])[0]?.[0]||'Matematika';
+            summaryDiv.innerHTML=`<p>📌 Total percakapan: ${total}</p><p>📚 Pelajaran favorit: ${topSubject}</p><p>🕒 Terakhir aktif: ${lastActive}</p>`;
+            const recent=chats.slice(0,20);
+            historyDiv.innerHTML=recent.map(c=>`<div class="chat-history-item"><div><strong>🧑‍🎓 Siswa:</strong> ${escapeHtml(c.user_message?.substring(0,150)||'')}</div><div><strong>🤖 Ai Mi:</strong> ${escapeHtml(c.ai_message?.substring(0,120)||'')}...</div><div style="font-size:0.7rem;">📅 ${new Date(c.timestamp).toLocaleString('id-ID')} · ${c.subject}</div></div>`).join('');
+            if(chats.length>20) historyDiv.innerHTML+=`<div>... dan ${chats.length-20} lainnya</div>`;
+        }catch(err){ console.error(err); summaryDiv.innerHTML='Gagal memuat laporan.'; historyDiv.innerHTML='Error'; }
     }
-
-    function loginParent(pin) { if (pin === '1234') { isParentLogged = true; document.getElementById('pinSection').classList.add('hidden'); document.getElementById('reportSection').classList.remove('hidden'); loadParentReport(); } else alert('PIN salah! Gunakan: 1234'); }
-    function simulateWhatsApp() { const summaryText = document.getElementById('reportSummary').innerText || 'Laporan belajar anak'; const message = `📊 *Laporan Harian MindSeek-edu*\n\n${summaryText}\n\n✅ Terus dukung semangat belajarnya! 🌸`; alert(`📱 SIMULASI KIRIM WA\n\n${message}\n\n(Integrasi nyata akan segera hadir)`); }
-    function switchMode(mode) {
-        currentMode = mode;
-        if (mode === 'siswa') { studentView.classList.remove('hidden'); parentView.classList.add('hidden'); }
-        else { studentView.classList.add('hidden'); parentView.classList.remove('hidden'); if (!isParentLogged) { document.getElementById('pinSection').classList.remove('hidden'); document.getElementById('reportSection').classList.add('hidden'); } else { document.getElementById('pinSection').classList.add('hidden'); document.getElementById('reportSection').classList.remove('hidden'); loadParentReport(); } }
-        document.querySelectorAll('.mode-btn').forEach(btn => { if (btn.getAttribute('data-mode') === mode) btn.classList.add('active'); else btn.classList.remove('active'); });
+    function loginParent(pin){ if(pin==='1234'){ isParentLogged=true; document.getElementById('pinSection').classList.add('hidden'); document.getElementById('reportSection').classList.remove('hidden'); loadParentReport(); } else alert('PIN salah!'); }
+    function simulateWhatsApp(){ const summaryText=document.getElementById('reportSummary').innerText||'Laporan belajar anak'; alert(`📱 SIMULASI KIRIM WA\n\n${summaryText}\n\n(Integrasi nyata menyusul)`); }
+    function switchMode(mode){
+        currentMode=mode;
+        if(mode==='siswa'){ studentView.classList.remove('hidden'); parentView.classList.add('hidden'); }
+        else{ studentView.classList.add('hidden'); parentView.classList.remove('hidden'); if(!isParentLogged){ document.getElementById('pinSection').classList.remove('hidden'); document.getElementById('reportSection').classList.add('hidden'); } else{ document.getElementById('pinSection').classList.add('hidden'); document.getElementById('reportSection').classList.remove('hidden'); loadParentReport(); } }
+        document.querySelectorAll('.mode-btn').forEach(btn=>{ if(btn.getAttribute('data-mode')===mode) btn.classList.add('active'); else btn.classList.remove('active'); });
     }
-    function clearInput() { userInput.value = ''; userInput.focus(); }
+    function clearText(){ userInput.value=''; userInput.focus(); }
 
     // ========== EVENT LISTENERS ==========
-    gradeSelect.addEventListener('change', () => {
-        updateTopicDropdown();
-        topicSelect.value = "";
-        if (gradeSelect.value && gradeSelect.value !== "") showSystemMessage(`Kelas diubah menjadi ${gradeSelect.value}. Silakan pilih topik.`);
+    gradeSelect.addEventListener('change', () => { updateTopicDropdown(); topicSelect.value=""; checkAllSelected(); });
+    topicSelect.addEventListener('change', checkAllSelected);
+    subjectSelect.addEventListener('change', checkAllSelected);
+    editBtn.addEventListener('click', () => {
+        selectionPanel.classList.remove('hidden');
+        summaryChip.classList.add('hidden');
+        selectionsMade = false;
     });
-    topicSelect.addEventListener('change', async () => {
-        if (topicSelect.value && topicSelect.value !== "") {
-            currentGrade = gradeSelect.value;
-            currentTopic = topicSelect.value;
-            await sendContextToAI();
-            contextSent = true;
-            await askAiForGreeting();
-        }
-    });
+    clearTextBtn.addEventListener('click', clearText);
     clearHistoryBtn.addEventListener('click', clearHistory);
-    clearInputBtn.addEventListener('click', clearInput);
     sendBtn.addEventListener('click', () => sendMessage());
-    userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !isLoading) sendMessage(); });
+    userInput.addEventListener('keypress', (e) => { if(e.key==='Enter' && !isLoading) sendMessage(); });
     document.getElementById('pinLoginBtn').addEventListener('click', () => { const pin = document.getElementById('pinInput').value; loginParent(pin); });
     document.getElementById('refreshReportBtn').addEventListener('click', loadParentReport);
     document.getElementById('waSimulateBtn').addEventListener('click', simulateWhatsApp);
-    document.querySelectorAll('.mode-btn').forEach(btn => { btn.addEventListener('click', (e) => { const mode = btn.getAttribute('data-mode'); switchMode(mode); }); });
+    // Language toggle
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const lang = btn.getAttribute('data-lang');
+            if(lang === currentLanguage) return;
+            currentLanguage = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateDropdowns();
+            // Reset pilihan jika sudah ada
+            gradeSelect.value = "";
+            topicSelect.disabled = true;
+            topicSelect.innerHTML = '<option value="" disabled selected>-- ' + (currentLanguage==='id'?'Pilih Topik':'Select Topic') + ' --</option>';
+            subjectSelect.value = currentLanguage==='id'?'Matematika':'Mathematics';
+            selectionsMade = false;
+            selectionPanel.classList.remove('hidden');
+            summaryChip.classList.add('hidden');
+            // Jangan reset chat history, tapi tampilkan pesan info
+            showSystemMessage(currentLanguage==='id'?'Bahasa diubah menjadi Indonesia. Silakan pilih kelas dan topik.':'Language changed to English. Please select grade and topic.');
+        });
+    });
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => { const mode = btn.getAttribute('data-mode'); switchMode(mode); });
+    });
 
-    // INISIALISASI: load riwayat chat dari DB, atur dropdown, dll.
-    updateTopicDropdown();
+    // INISIALISASI
+    updateDropdowns();
     switchMode('siswa');
     loadChatHistory();
-    console.log('✅ MindSeek-edu SD siap (chat tetap setelah refresh, tombol horizontal, no auto-focus)');
+    // Jika sudah ada pilihan tersimpan? tidak, karena fresh.
+    console.log('✅ MindSeek-edu SD final siap (dropdown sembunyi, chip, bahasa toggle, tombol tetap)');
 </script>
 </body>
 </html>
