@@ -607,7 +607,7 @@
         autoResizeTextarea();
         showLoading();
         try{
-            const chatResponse = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatMessages})});
+            const chatResponse = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatMessages, language: currentLanguage})});
             const chatData = await chatResponse.json();
             hideLoading();
             if(!chatResponse.ok){ const errMsg=chatData.error||(currentLanguage==='id'?'Ai Mi kelelahan.':'Ai Mi is tired.'); appendChat('ai',`💕 ${errMsg}`); chatMessages.push({role:'assistant',content:errMsg}); return; }

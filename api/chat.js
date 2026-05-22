@@ -3,8 +3,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-
-  const { messages } = req.body;
+  
+  const { messages, language } = req.body;   // ← tambahkan language
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Messages required' });
   }
@@ -231,17 +231,12 @@ Write your choice! 🎉"
 🔁 Your goal: child understands and feels confident. Use emojis to make learning fun. 💕`;
 
 // =========================================================
-// DETEKSI BAHASA
+// PILIH BAHASA BERDASARKAN REQUEST (TIDAK DETEKSI OTOMATIS)
 // =========================================================
-let systemPrompt = SYSTEM_PROMPT_ID;
-const lastUserMessage = messages.filter(m => m.role === 'user').pop();
-if (lastUserMessage && lastUserMessage.content) {
-const content = lastUserMessage.content.toLowerCase();
-if (content.includes('ready to learn in english') || content.includes('i\'m ready to learn in english')) {
- systemPrompt = SYSTEM_PROMPT_EN;
-} else if (content.includes('siap belajar dengan bahasa indonesia') || content.includes('siap belajar')) {
- systemPrompt = SYSTEM_PROMPT_ID;
-}
+const { messages, language } = req.body;  // ← pastikan ada language
+let systemPrompt = SYSTEM_PROMPT_ID;      // default ID
+if (language === 'en') {
+  systemPrompt = SYSTEM_PROMPT_EN;
 }
 
 const finalMessages = [{ role: 'system', content: systemPrompt }, ...messages];
