@@ -384,7 +384,7 @@
 
 <script>
     // =========================================================
-    // 1. KONFIGURASI & DATA PER BAHASA
+    // 1. KONFIGURASI & DATA PER BAHASA (tanpa prompt, hanya UI)
     // =========================================================
     const USER_ID = 'siswa_001';
     let currentLanguage = 'id';
@@ -396,9 +396,7 @@
     let isLoading = false;
     let isParentLogged = false;
     let currentMode = 'siswa';
-    let contextSent = false;
 
-    // Data dropdown per bahasa
     const gradesData = { id: ['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'], en: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'] };
     const topicsData = {
         id: { 'Kelas 1': ['Bilangan 1-10', 'Penjumlahan', 'Pengurangan', 'Bangun Datar'], 'Kelas 2': ['Bilangan 1-100', 'Penjumlahan/Pengurangan', 'Perkalian', 'Pembagian'], 'Kelas 3': ['Pecahan sederhana', 'Perkalian/Pembagian', 'Pengukuran', 'Keliling'], 'Kelas 4': ['Bilangan besar', 'Operasi campuran', 'KPK/FPB', 'Luas bangun'], 'Kelas 5': ['Pecahan', 'Desimal', 'Skala', 'Volume'], 'Kelas 6': ['Persamaan sederhana', 'Statistika', 'Bilangan bulat', 'Ujian sekolah'] },
@@ -408,149 +406,6 @@
         id: [{value:'Matematika', label:'📐 Matematika', disabled:false},{value:'Fisika', label:'⚛️ Fisika (segera)', disabled:true},{value:'Kimia', label:'🧪 Kimia (segera)', disabled:true},{value:'Biologi', label:'🧬 Biologi (segera)', disabled:true},{value:'Pengetahuan Umum', label:'📚 Pengetahuan Umum (segera)', disabled:true}],
         en: [{value:'Mathematics', label:'📐 Mathematics', disabled:false},{value:'Physics', label:'⚛️ Physics (soon)', disabled:true},{value:'Chemistry', label:'🧪 Chemistry (soon)', disabled:true},{value:'Biology', label:'🧬 Biology (soon)', disabled:true},{value:'General Knowledge', label:'📚 General Knowledge (soon)', disabled:true}]
     };
-
-    // PROMPT ID dan EN (final dengan trigger bahasa)
-    const PROMPT_ID = `Kamu adalah Ai Mi, tutor matematika untuk siswa SD (kelas 1–6) yang sabar, ramah, dan suka emoji. Tugasmu: MEMBIMBING siswa menemukan jawaban sendiri – BUKAN memberi jawaban langsung.
-
-🚫 LARANGAN UTAMA:
-1. JANGAN pernah memberi jawaban akhir langsung.
-2. JANGAN memberi seluruh langkah sekaligus.
-3. JANGAN memberi latihan sebelum semua PR selesai.
-4. JANGAN bilang "salah" tanpa petunjuk (pakai "hampir, coba lagi" atau 🥲).
-
-✅ ATURAN UMUM:
-- Gunakan analogi anak SD suka: 🍬 permen, 🎈 balon, 🧸 boneka, 🪙 koin, 🍕 pizza, 🧩 puzzle.
-- Satu soal satu waktu. Selesai dulu baru lanjut.
-- Jika siswa memberi beberapa soal: "Wah, ada beberapa soal ya. Kita kerjakan satu per satu. Mulai dari nomor 1, boleh? 😊"
-- Awali setiap jawaban dengan: "Hi! Ai Mi di sini~ 💕"
-- Setelah siswa memberi JAWABAN AKHIR, RINGKAS penyelesaian dengan emoji, lalu tanyakan: "Paham? 😊"
-- Jika siswa 3x salah di soal yang sama, tawarkan jeda: "Istirahat sebentar? 🧸 Nanti Ai Mi jelaskan cara lain."
-
-📘 MODE PR (Bantuan PR):
-1. Minta langkah pertama. Tunggu jawaban.
-2. Benar → puji (🎉👍), minta langkah berikutnya.
-3. Salah → beri petunjuk berbeda + emoji penyemangat.
-4. Ulangi hingga siswa menemukan jawaban akhir.
-5. RINGKAS langkah dan hasil. Tanyakan paham.
-6. Setelah semua PR selesai: "Hebat! 🎉 Mau latihan? Ai Mi tunggu~"
-
-📘 MODE LATIHAN (jika siswa minta):
-1. Jelaskan materi singkat + rumus (📖🧮).
-2. Beri 3 contoh (mudah 🟢, sedang 🟡, sulit 🔴) dengan penyelesaian.
-3. Latihan 3 tingkat (@5 soal). Beri satu per satu.
-   - Benar → puji (✅👍)
-   - Salah → petunjuk (❌ coba lagi). Jika masih salah setelah 2 petunjuk, beri analogi berbeda.
-4. Setelah 5 soal, hitung nilai = (benar/5)×100. Tampilkan bintang: ⭐⭐⭐ (≥80), ⭐⭐ (60-79), ⭐ (<60).
-5. Tanyakan: "Nilai kamu X. Mau lanjut ke tingkat berikutnya? 🟡 (atau ulang yang mudah?)"
-
-📘 MODE ROADMAP (jika minta): 
-- Berikan daftar bab per semester sesuai kelas (pakai emoji kalender 📅, buku 📚).
-- Tanyakan: "Ini peta jalan belajarmu. Siap mulai? Sebutkan 'Mulai' ya~ 🚀"
-
-🟢 SALAM PEMBUKA (otomatis saat siswa mengatakan "Halo Ai Mi, saya siap belajar dengan bahasa Indonesia" atau kalimat serupa):
-"Hi! 🌸 Aku Ai Mi, tutor matematika SD. Ada yang bisa aku bantu?
-1️⃣ Apakah kamu memiliki tugas atau PR? (tulis atau upload foto 📸)
-2️⃣ Mau berlatih untuk meningkatkan nilai? 📚
-3️⃣ Mau peta jalan pembelajaran mu? 🗺️
-Pilih nomor berapa? 😊"
-
-🧪 CONTOH Mode PR (BENAR):
-Siswa: "7 + 8 = ?"
-Ai Mi: "Hi! Bayangkan 7 permen 🍬, Ayah kasih 8 lagi. Berapa total? Coba hitung pakai jari."
-Siswa: "15"
-Ai Mi: "Hebat! ✅ Jadi 7+8=15. Paham? Lanjut ya."
-
-🧪 CONTOH Mode Latihan (BENAR):
-Siswa: "Aku mau latihan penjumlahan."
-Ai Mi: "Oke! 🟢 Soal 1: 4+3 = ?"
-Siswa: "7"
-Ai Mi: "Benar ✅. 🟢 Soal 2: 9+2 = ?"
-Siswa: "11"
-Ai Mi: "Hebat! ✅ (lanjut sampai 5 soal) Nilai 100 ⭐⭐⭐. Mau lanjut ke tingkat sedang? 🟡"
-
-🧪 CONTOH SISWA SALAH (BENAR):
-Siswa: "8+5=12"
-Ai Mi: "Hampir 🥲. Coba bayangkan 8 permen + 5 permen. Hitung dari 8: 9,10,11,12,13. Berapa?"
-Siswa: "13"
-Ai Mi: "Betul ✅ Jadi 8+5=13. Kamu bisa!"
-
-❌ CONTOH SALAH (jangan lakukan):
-❌ "Jawabannya 15"
-❌ "7+8=15"
-❌ Memberi latihan sebelum PR selesai.
-
-🔁 PENUTUP: Kamu teman belajar yang sabar, bukan pemberi jawaban. Pakai emoji biar anak senang. Tujuan: anak paham dan percaya diri. 💕`;
-
-    const PROMPT_EN = `You are Ai Mi, a patient, friendly elementary math tutor (grades 1-6) who loves emojis. Your job: GUIDE students to find answers themselves – NOT give direct answers.
-
-🚫 MAIN RULES:
-1. NEVER give the final answer directly.
-2. NEVER give all steps at once.
-3. NEVER give exercises before all homework is done.
-4. NEVER just say "wrong" without a clue (use "almost, try again" or 🥲).
-
-✅ GENERAL:
-- Use the analogy of elementary school children like: 🍬 candy, 🎈 balloon, 🧸 doll, 🪙 coin, 🍕 pizza, 🧩 puzzle.
-- One question at a time. Finish first, then continue.
-- If student gives multiple questions: "Wow, you have several questions. Let's do them one by one. Start with number 1, okay? 😊"
-- Start each response with: "Hi! Ai Mi is here~ 💕"
-- After student gives FINAL ANSWER, SUMMARIZE the solution with emoji, then ask: "Got it? 😊"
-- If student fails the same question 3 times, offer a break: "Take a short break? 🧸 I'll explain differently."
-
-📘 HOMEWORK MODE:
-1. Ask for the first step. Wait for answer.
-2. Correct → praise (🎉👍), ask next step.
-3. Wrong → give different clue + encouraging emoji.
-4. Repeat until student finds final answer.
-5. SUMMARIZE steps & result. Ask if understood.
-6. After all homework done: "Great! 🎉 Want to practice? Ai Mi is waiting~"
-
-📘 PRACTICE MODE (if requested):
-1. Give a short explanation + main formula (📖🧮).
-2. Give 3 examples (easy 🟢, medium 🟡, hard 🔴) with solutions.
-3. Practice 3 levels (5 questions each). One by one.
-   - Correct → praise (✅👍)
-   - Wrong → clue (❌ try again). If still wrong after 2 clues, use a different analogy.
-4. After 5 questions, score = (correct/5)×100. Show stars: ⭐⭐⭐ (≥80), ⭐⭐ (60-79), ⭐ (<60).
-5. Ask: "Your score is X. Want to move to the next level? 🟡 (or repeat easy level?)"
-
-📘 ROADMAP MODE (if asked): Give list of chapters per semester per grade.
-- Provide a list of chapters per semester according to grade (use the calendar emoji 📅, book emoji 📚).
-- Ask: "Here's your study roadmap. Ready to start? Say 'Start', okay~ 🚀"
-
-🟢 GREETING (automatic when student says "Halo Ai Mi, I'm ready to learn in English" or similar phrase):
-"Hi! 🌸 I'm Ai Mi, your elementary math tutor. How can I help?
-1️⃣ Do you have any assignments or homework? (write or upload photo 📸)
-2️⃣ Want to practice to improve your grades? 📚
-3️⃣ Want a roadmap for your learning? 🗺️
-Choose a number! 😊"
-
-🧪 EXAMPLE Homework (CORRECT):
-Student: "7 + 8 = ?"
-Ai Mi: "Hi! Imagine 7 candies 🍬, dad gives 8 more. How many total? Count with fingers."
-Student: "15"
-Ai Mi: "Great! ✅ So 7+8=15. Got it? Let's continue."
-
-🧪 EXAMPLE Practice (CORRECT):
-Student: "I want to practice addition."
-Ai Mi: "OK! 🟢 Question 1: 4+3 = ?"
-Student: "7"
-Ai Mi: "Correct ✅. 🟢 Question 2: 9+2 = ?"
-Student: "11"
-Ai Mi: "Great! ✅ (continue to 5 questions) Score 100 ⭐⭐⭐. Want to try medium level? 🟡"
-
-🧪 EXAMPLE Wrong Answer (CORRECT):
-Student: "8+5=12"
-Ai Mi: "Almost 🥲. Imagine 8 candies + 5 candies. Count from 8: 9,10,11,12,13. How many?"
-Student: "13"
-Ai Mi: "Right ✅ So 8+5=13. You can do it!"
-
-❌ WRONG examples (DON'T do):
-❌ "The answer is 15"
-❌ "7+8=15"
-❌ Giving practice before homework finished.
-
-🔁 CLOSING: You are a patient learning friend, not an answer giver. Use emojis. Goal: child understands and feels confident. 💕`;
 
     // DOM elements
     const studentView = document.getElementById('studentView');
@@ -570,11 +425,7 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
     const chipText = document.getElementById('chipText');
     const editBtn = document.getElementById('editSelectionBtn');
 
-    // Auto-resize textarea (hilangkan scroll)
-    function autoResizeTextarea() {
-        userInput.style.height = 'auto';
-        userInput.style.height = Math.min(userInput.scrollHeight, 150) + 'px';
-    }
+    function autoResizeTextarea() { userInput.style.height = 'auto'; userInput.style.height = Math.min(userInput.scrollHeight, 150) + 'px'; }
     userInput.addEventListener('input', autoResizeTextarea);
 
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
@@ -585,7 +436,6 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
     function showLoading() { if(loadingDiv) loadingDiv.remove(); loadingDiv = document.createElement('div'); loadingDiv.className = 'msg ai loading-indicator'; loadingDiv.textContent = '💕 Ai Mi is typing...'; chatBox.appendChild(loadingDiv); chatBox.scrollTop = chatBox.scrollHeight; }
     function hideLoading() { if(loadingDiv) { loadingDiv.remove(); loadingDiv = null; } }
 
-    // ========== DROPDOWN DINAMIS ==========
     function updateDropdowns() {
         const grades = gradesData[currentLanguage];
         gradeSelect.innerHTML = '<option value="" disabled selected>-- ' + (currentLanguage==='id'?'Pilih Kelas':'Select Grade') + ' --</option>';
@@ -620,20 +470,16 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
 
     async function sendContextAndGreeting() {
         if (!selectionsMade) return;
-        let context = `Siswa kelas: ${currentGrade}, topik: ${currentTopic}, mata pelajaran: ${currentSubject}. Gunakan analogi untuk SD.`;
-        if (currentLanguage === 'en') context = `Student grade: ${currentGrade}, topic: ${currentTopic}, subject: ${currentSubject}. Use analogies for elementary school.`;
-        chatMessages.unshift({ role: 'system', content: context });
         const triggerMessage = currentLanguage === 'id' ? "Halo Ai Mi, saya siap belajar dengan bahasa Indonesia" : "Halo Ai Mi, I'm ready to learn in English";
         userInput.value = triggerMessage;
         await sendMessage(true);
-        // Bersihkan input setelah pesan trigger terkirim (delay untuk memastikan proses selesai)
+        // Bersihkan input setelah trigger terkirim
         setTimeout(() => {
             userInput.value = '';
             autoResizeTextarea();
         }, 50);
     }
 
-    // ========== LOAD CHAT HISTORY ==========
     async function loadChatHistory() {
         try {
             const response = await fetch(`/api/report?user_id=${USER_ID}`);
@@ -651,19 +497,13 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
         } catch(e) { console.warn(e); }
     }
 
-    // ========== DELETE HISTORY ==========
     async function deleteHistory() {
         try {
-            const response = await fetch('/api/delete-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: USER_ID })
-            });
+            const response = await fetch('/api/delete-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: USER_ID }) });
             if (!response.ok) throw new Error('Delete failed');
             while (chatBox.children.length > 0) chatBox.removeChild(chatBox.firstChild);
             chatMessages = [];
             selectionsMade = false;
-            contextSent = false;
             selectionPanel.classList.remove('hidden');
             summaryChip.classList.add('hidden');
             gradeSelect.value = "";
@@ -674,7 +514,7 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
         } catch(err) { console.error(err); showSystemMessage(currentLanguage==='id'?'Gagal menghapus riwayat. Coba lagi.':'Failed to delete history. Try again.'); }
     }
 
-    // ========== UPLOAD & OCR ==========
+    // OCR functions (sama seperti sebelumnya)
     async function compressImage(file, maxWidth=1024, quality=0.8) {
         return new Promise((resolve,reject)=>{
             const reader=new FileReader();
@@ -742,14 +582,11 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
             showSystemMessage(`${currentLanguage==='id'?'📖 Teks terbaca:\n':'📖 Extracted text:\n'}${text.substring(0,300)}${text.length>300?'...':''}`);
             userInput.value=`${currentLanguage==='id'?'Soal:\n':'Question:\n'}${text}`;
             await sendMessage(true);
-            // Kosongkan setelah kirim
-            userInput.value = '';
-            autoResizeTextarea();
+            userInput.value = ''; autoResizeTextarea();
         }catch(err){ showSystemMessage(`${currentLanguage==='id'?'💥 Gagal: ':'💥 Failed: '}${err.message}. ${currentLanguage==='id'?'Coba foto jelas.':'Take a clearer photo.'}`); showManualInputButton(); }
         finally{ uploadLabel.classList.remove('disabled'); fileInput.value=''; }
     });
 
-    // ========== SEND MESSAGE ==========
     async function sendMessage(skipClear=false){
         let message = userInput.value.trim();
         if(!message||isLoading) return;
@@ -764,9 +601,8 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
         autoResizeTextarea();
         showLoading();
         try{
-            const systemPrompt = currentLanguage==='id'?PROMPT_ID:PROMPT_EN;
-            const finalMessages = [{role:'system',content:systemPrompt}, ...chatMessages];
-            const chatResponse = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:finalMessages})});
+            // Kirim hanya chatMessages (tanpa system prompt karena sudah di backend)
+            const chatResponse = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatMessages})});
             const chatData = await chatResponse.json();
             hideLoading();
             if(!chatResponse.ok){ const errMsg=chatData.error||(currentLanguage==='id'?'Ai Mi kelelahan.':'Ai Mi is tired.'); appendChat('ai',`💕 ${errMsg}`); chatMessages.push({role:'assistant',content:errMsg}); return; }
@@ -780,12 +616,10 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
             sendBtn.disabled=false; 
             userInput.disabled=false; 
             uploadLabel.style.pointerEvents='auto'; 
-            // Lepaskan fokus agar keyboard tidak muncul otomatis
-            userInput.blur();
+            userInput.blur(); // lepaskan fokus agar keyboard tidak muncul otomatis
         }
     }
 
-    // ========== PARENT MODE ==========
     async function loadParentReport(){
         const summaryDiv=document.getElementById('reportSummary');
         const historyDiv=document.getElementById('chatHistory');
@@ -823,13 +657,10 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
     clearTextBtn.addEventListener('click',clearText);
     deleteHistoryBtn.addEventListener('click',deleteHistory);
     sendBtn.addEventListener('click',()=>sendMessage());
-    // Hapus event listener Enter untuk kirim – biarkan Enter membuat baris baru saja
-    // Tidak ada lagi userInput.addEventListener('keypress',...)
     document.getElementById('pinLoginBtn').addEventListener('click',()=>{ const pin=document.getElementById('pinInput').value; loginParent(pin); });
     document.getElementById('refreshReportBtn').addEventListener('click',loadParentReport);
     document.getElementById('waSimulateBtn').addEventListener('click',simulateWhatsApp);
 
-    // Language toggle
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             const lang = btn.getAttribute('data-lang');
@@ -852,11 +683,10 @@ Ai Mi: "Right ✅ So 8+5=13. You can do it!"
     });
     document.querySelectorAll('.mode-btn').forEach(btn => { btn.addEventListener('click', (e) => { const mode = btn.getAttribute('data-mode'); switchMode(mode); }); });
 
-    // INISIALISASI
     updateDropdowns();
     switchMode('siswa');
     loadChatHistory();
-    console.log('✅ MindSeek.edu SD final siap (tombol teks, enter tidak kirim, no auto-focus, trigger hilang)');
+    console.log('✅ MindSeek.edu SD final siap (prompt di backend)');
 </script>
 </body>
 </html>
