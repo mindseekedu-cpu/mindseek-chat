@@ -480,19 +480,27 @@
 
     // Kirim trigger dengan format yang sesuai (tidak perlu deteksi otomatis karena language sudah dikirim)
     async function sendContextAndGreeting() {
-        if (!selectionsMade) return;
-        let gradeNumber = currentGrade.replace(/\D/g, '');
-        if (gradeNumber === '') gradeNumber = '1';
-        // Gunakan format yang sama dengan yang diharapkan prompt (meskipun tidak digunakan untuk deteksi)
-        const triggerMessage = currentLanguage === 'id' 
-            ? `Halo Ai Mi (彭爱米), saya kelas ${gradeNumber} siap belajar dengan bahasa Indonesia`
-            : `Hi Ai Mi, I am in grade ${gradeNumber} ready to learn in English`;
-        userInput.value = triggerMessage;
-        await sendMessage(true);
-        setTimeout(() => {
-            userInput.value = '';
-            autoResizeTextarea();
-        }, 50);
+    		if (!selectionsMade) return;
+    		let gradeNumber = currentGrade.replace(/\D/g, '');
+   		 if (gradeNumber === '') gradeNumber = '1';
+    
+    		// Tidak perlu trigger message panjang lagi, karena metadata akan dikirim terpisah.
+    		// Tapi kita tetap kirim salam sederhana agar AI merespon sapaan.
+    		const triggerMessage = currentLanguage === 'id' 
+        		? `Halo Ai Mi`
+        		: `Hi Ai Mi`;
+    
+    		userInput.value = triggerMessage;
+    		// Kita akan mengirim metadata di sendMessage, jadi panggil sendMessage dengan flag
+    		await sendMessage(true, {
+        		grade: gradeNumber,
+        		topic: currentTopic,
+        		subject: currentSubject
+    		});
+    		setTimeout(() => {
+        		userInput.value = '';
+        		autoResizeTextarea();
+    		}, 50);
     }
 
     async function loadChatHistory() {
@@ -602,45 +610,85 @@
         finally{ uploadLabel.classList.remove('disabled'); fileInput.value=''; }
     });
 
-    async function sendMessage(skipClear=false){
-        let message = userInput.value.trim();
-        if(!message||isLoading) return;
-        message = normalizeMathNotation(message);
-        isLoading=true;
-        sendBtn.disabled=true;
-        userInput.disabled=true;
-        uploadLabel.style.pointerEvents='none';
-        appendChat('user',message);
-        chatMessages.push({role:'user',content:message});
-        if(!skipClear) userInput.value='';
-        autoResizeTextarea();
-        showLoading();
-        try{
-            const chatResponse = await fetch('/api/chat',{
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({
-                    messages: chatMessages,
-                    language: currentLanguage
-                })
-            });
-            const chatData = await chatResponse.json();
-            hideLoading();
-            if(!chatResponse.ok){ const errMsg=chatData.error||(currentLanguage==='id'?'Ai Mi kelelahan.':'Ai Mi is tired.'); appendChat('ai',`💕 ${errMsg}`); chatMessages.push({role:'assistant',content:errMsg}); return; }
-            const aiReply=chatData.reply||(currentLanguage==='id'?'Maaf, Ai Mi tidak bisa menjawab.':'Sorry, Ai Mi cannot answer.');
-            appendChat('ai',aiReply);
-            chatMessages.push({role:'assistant',content:aiReply});
-            await fetch('/api/save-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:USER_ID,user_message:message,ai_message:aiReply,subject:subjectSelect.value})});
-        }catch(err){ hideLoading(); console.error(err); appendChat('ai',currentLanguage==='id'?'💕 Gangguan jaringan. Coba lagi.':'💕 Network error. Try again.'); }
-        finally{ 
-            isLoading=false; 
-            sendBtn.disabled=false; 
-            userInput.disabled=false; 
-            uploadLabel.style.pointerEvents='auto'; 
-            userInput.blur();
-        }
-    }
-
+    async function sendMessage(skipClear = false, metadata = null) {
+    			let message = userInput.value.trim();
+    			if (!message && !metadata) return; // jika tidak ada pesan dan tidak ada metadata (trigger), jangan kirim
+    			if (isLoading) return;
+    
+    			// Jika metadata ada (berarti dari trigger), kita bisa kirim pesan kosong? Tidak, tetap harus ada pesan.
+    			// Lebih baik: jika metadata ada dan message kosong, gunakan pesan default.
+    			if (metadata && !message) {
+        			message = currentLanguage === 'id' ? 'Halo Ai Mi' : 'Hi Ai Mi';
+    			}
+    
+   			message = normalizeMathNotation(message);
+    			isLoading = true;
+    			sendBtn.disabled = true;
+    			userInput.disabled = true;
+    			uploadLabel.style.pointerEvents = 'none';
+    			appendChat('user', message);
+    			chatMessages.push({ role: 'user', content: message });
+    			if (!skipClear) userInput.value = '';
+    			autoResizeTextarea();
+    			showLoading();
+    
+    			try {
+        			// Siapkan body dengan metadata
+        			const requestBody = {
+            				messages: chatMessages,
+            				language: currentLanguage
+        			};
+        			if (metadata) {
+            				requestBody.grade = metadata.grade;
+            				requestBody.topic = metadata.topic;
+            				requestBody.subject = metadata.subject;
+        			} else {
+            				// Jika tidak ada metadata (percakapan biasa), kita tetap kirim grade/topic dari currentGrade/topic
+            				let gradeNumber = currentGrade.replace(/\D/g, '');
+            				if (gradeNumber === '') gradeNumber = '1';
+            				requestBody.grade = gradeNumber;
+            				requestBody.topic = currentTopic;
+            				requestBody.subject = currentSubject;
+       				 }
+        
+        			const chatResponse = await fetch('/api/chat', {
+            				method: 'POST',
+            				headers: { 'Content-Type': 'application/json' },
+            				body: JSON.stringify(requestBody)
+        			});
+        			const chatData = await chatResponse.json();
+        			hideLoading();
+        			if (!chatResponse.ok) {
+            				const errMsg = chatData.error || (currentLanguage === 'id' ? 'Ai Mi kelelahan.' : 'Ai Mi is tired.');
+            				appendChat('ai', `💕 ${errMsg}`);
+            				chatMessages.push({ role: 'assistant', content: errMsg });
+            				return;
+        			}
+        			const aiReply = chatData.reply || (currentLanguage === 'id' ? 'Maaf, Ai Mi tidak bisa menjawab.' : 'Sorry, Ai Mi cannot answer.');
+        			appendChat('ai', aiReply);
+        			chatMessages.push({ role: 'assistant', content: aiReply });
+        			await fetch('/api/save-chat', {
+            				method: 'POST',
+            				headers: { 'Content-Type': 'application/json' },
+            				body: JSON.stringify({
+                				user_id: USER_ID,
+                				user_message: message,
+                				ai_message: aiReply,
+                				subject: subjectSelect.value
+            				})
+        			});
+    		} catch (err) {
+        		hideLoading();
+        		console.error(err);
+        		appendChat('ai', currentLanguage === 'id' ? '💕 Gangguan jaringan. Coba lagi.' : '💕 Network error. Try again.');
+    		} finally {
+        		isLoading = false;
+        		sendBtn.disabled = false;
+        		userInput.disabled = false;
+        		uploadLabel.style.pointerEvents = 'auto';
+        		userInput.blur();
+   		 }
+}
     async function loadParentReport(){
         const summaryDiv=document.getElementById('reportSummary');
         const historyDiv=document.getElementById('chatHistory');
@@ -677,7 +725,7 @@
     editBtn.addEventListener('click',()=>{ selectionPanel.classList.remove('hidden'); summaryChip.classList.add('hidden'); selectionsMade=false; });
     clearTextBtn.addEventListener('click',clearText);
     deleteHistoryBtn.addEventListener('click',deleteHistory);
-    sendBtn.addEventListener('click',()=>sendMessage());
+    sendBtn.addEventListener('click', () => sendMessage(false, null));
     document.getElementById('pinLoginBtn').addEventListener('click',()=>{ const pin=document.getElementById('pinInput').value; loginParent(pin); });
     document.getElementById('refreshReportBtn').addEventListener('click',loadParentReport);
     document.getElementById('waSimulateBtn').addEventListener('click',simulateWhatsApp);
