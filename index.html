@@ -384,7 +384,7 @@
 
 <script>
     // =========================================================
-    // 1. KONFIGURASI & DATA PER BAHASA (tanpa prompt, hanya UI)
+    // KONFIGURASI & UI (tanpa prompt panjang)
     // =========================================================
     const USER_ID = 'siswa_001';
     let currentLanguage = 'id';
@@ -397,6 +397,7 @@
     let isParentLogged = false;
     let currentMode = 'siswa';
 
+    // Data dropdown
     const gradesData = { id: ['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'], en: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'] };
     const topicsData = {
         id: { 'Kelas 1': ['Bilangan 1-10', 'Penjumlahan', 'Pengurangan', 'Bangun Datar'], 'Kelas 2': ['Bilangan 1-100', 'Penjumlahan/Pengurangan', 'Perkalian', 'Pembagian'], 'Kelas 3': ['Pecahan sederhana', 'Perkalian/Pembagian', 'Pengukuran', 'Keliling'], 'Kelas 4': ['Bilangan besar', 'Operasi campuran', 'KPK/FPB', 'Luas bangun'], 'Kelas 5': ['Pecahan', 'Desimal', 'Skala', 'Volume'], 'Kelas 6': ['Persamaan sederhana', 'Statistika', 'Bilangan bulat', 'Ujian sekolah'] },
@@ -468,12 +469,17 @@
         } else { selectionPanel.classList.remove('hidden'); summaryChip.classList.add('hidden'); selectionsMade = false; }
     }
 
+    // Perbaikan: Kirim trigger yang menyertakan kelas!
     async function sendContextAndGreeting() {
         if (!selectionsMade) return;
-        const triggerMessage = currentLanguage === 'id' ? "Halo Ai Mi, saya siap belajar dengan bahasa Indonesia" : "Halo Ai Mi, I'm ready to learn in English";
+        // Ambil nomor kelas dari string (misal "Kelas 1" -> "1")
+        let gradeNumber = currentGrade.replace(/\D/g, '');
+        if (gradeNumber === '') gradeNumber = '1';
+        const triggerMessage = currentLanguage === 'id' 
+            ? `Halo Ai Mi, saya kelas ${gradeNumber} siap belajar dengan bahasa Indonesia`
+            : `Halo Ai Mi, I am in grade ${gradeNumber} ready to learn in English`;
         userInput.value = triggerMessage;
         await sendMessage(true);
-        // Bersihkan input setelah trigger terkirim
         setTimeout(() => {
             userInput.value = '';
             autoResizeTextarea();
@@ -514,7 +520,7 @@
         } catch(err) { console.error(err); showSystemMessage(currentLanguage==='id'?'Gagal menghapus riwayat. Coba lagi.':'Failed to delete history. Try again.'); }
     }
 
-    // OCR functions (sama seperti sebelumnya)
+    // OCR functions (sama seperti sebelumnya, tidak diubah)
     async function compressImage(file, maxWidth=1024, quality=0.8) {
         return new Promise((resolve,reject)=>{
             const reader=new FileReader();
@@ -601,7 +607,6 @@
         autoResizeTextarea();
         showLoading();
         try{
-            // Kirim hanya chatMessages (tanpa system prompt karena sudah di backend)
             const chatResponse = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatMessages})});
             const chatData = await chatResponse.json();
             hideLoading();
@@ -616,7 +621,7 @@
             sendBtn.disabled=false; 
             userInput.disabled=false; 
             uploadLabel.style.pointerEvents='auto'; 
-            userInput.blur(); // lepaskan fokus agar keyboard tidak muncul otomatis
+            userInput.blur();
         }
     }
 
@@ -686,7 +691,7 @@
     updateDropdowns();
     switchMode('siswa');
     loadChatHistory();
-    console.log('✅ MindSeek.edu SD final siap (prompt di backend)');
+    console.log('✅ MindSeek.edu SD final siap (trigger dengan kelas)');
 </script>
 </body>
 </html>
