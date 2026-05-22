@@ -489,8 +489,8 @@
         const topicName = currentTopic;
         
         const triggerMessage = currentLanguage === 'id' 
-            ? `Halo Ai Mi (彭爱米), saya kelas ${gradeNumber}, dan saya ingin belajar tentang ${topicName}. Siap belajar dengan bahasa Indonesia`
-            : `Hi Ai Mi, I am in grade ${gradeNumber}, and I want to learn about ${topicName}. Ready to learn in English`;
+            ? `Halo Ai Mi (彭爱米), saya kelas ${gradeNumber}, topik ${topicName}. Siap belajar dengan bahasa Indonesia`
+            : `Hi Ai Mi, I am in grade ${gradeNumber}, topic ${topicName}. Ready to learn in English`;
         
         userInput.value = triggerMessage;
         await sendMessage(true);
