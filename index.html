@@ -384,7 +384,7 @@
 
 <script>
     // =========================================================
-    // KONFIGURASI & UI (tanpa prompt panjang)
+    // KONFIGURASI & UI
     // =========================================================
     const USER_ID = 'siswa_001';
     let currentLanguage = 'id';
@@ -429,6 +429,14 @@
     function autoResizeTextarea() { userInput.style.height = 'auto'; userInput.style.height = Math.min(userInput.scrollHeight, 150) + 'px'; }
     userInput.addEventListener('input', autoResizeTextarea);
 
+    function updatePlaceholder() {
+        if (currentLanguage === 'id') {
+            userInput.placeholder = 'Tanya Ai Mi atau upload PR...';
+        } else {
+            userInput.placeholder = 'Ask Ai Mi or upload homework...';
+        }
+    }
+
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
     function renderMarkdown(text) { return escapeHtml(text).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>'); }
     function appendChat(role, text, isSystem=false) { const div = document.createElement('div'); div.className = `msg ${role}`; if (isSystem) div.classList.add('system-info'); if (role === 'ai') div.innerHTML = renderMarkdown(text); else div.textContent = text; chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight; }
@@ -445,6 +453,7 @@
         subjectSelect.innerHTML = '';
         subjects.forEach(sub => { const opt = document.createElement('option'); opt.value = sub.value; opt.textContent = sub.label; opt.disabled = sub.disabled; subjectSelect.appendChild(opt); });
         updateTopicDropdown();
+        updatePlaceholder();
     }
     function updateTopicDropdown() {
         const grade = gradeSelect.value;
@@ -469,15 +478,15 @@
         } else { selectionPanel.classList.remove('hidden'); summaryChip.classList.add('hidden'); selectionsMade = false; }
     }
 
-    // Perbaikan: Kirim trigger yang menyertakan kelas!
+    // Kirim trigger dengan format yang sesuai (tidak perlu deteksi otomatis karena language sudah dikirim)
     async function sendContextAndGreeting() {
         if (!selectionsMade) return;
-        // Ambil nomor kelas dari string (misal "Kelas 1" -> "1")
         let gradeNumber = currentGrade.replace(/\D/g, '');
         if (gradeNumber === '') gradeNumber = '1';
+        // Gunakan format yang sama dengan yang diharapkan prompt (meskipun tidak digunakan untuk deteksi)
         const triggerMessage = currentLanguage === 'id' 
-            ? `Halo Ai Mi, saya kelas ${gradeNumber} siap belajar dengan bahasa Indonesia`
-            : `Halo Ai Mi, I am in grade ${gradeNumber} ready to learn in English`;
+            ? `Halo Ai Mi (彭爱米), saya kelas ${gradeNumber} siap belajar dengan bahasa Indonesia`
+            : `Hi Ai Mi, I am in grade ${gradeNumber} ready to learn in English`;
         userInput.value = triggerMessage;
         await sendMessage(true);
         setTimeout(() => {
@@ -520,7 +529,7 @@
         } catch(err) { console.error(err); showSystemMessage(currentLanguage==='id'?'Gagal menghapus riwayat. Coba lagi.':'Failed to delete history. Try again.'); }
     }
 
-    // OCR functions (sama seperti sebelumnya, tidak diubah)
+    // OCR functions
     async function compressImage(file, maxWidth=1024, quality=0.8) {
         return new Promise((resolve,reject)=>{
             const reader=new FileReader();
@@ -565,10 +574,10 @@
     }
     function showManualInputButton(){
         const manualContainer=document.getElementById('manualInputContainer');
-        manualContainer.innerHTML=`<button id="manualTriggerBtn" class="manual-label">✍️ Tulis Soal Manual</button>`;
+        manualContainer.innerHTML=`<button id="manualTriggerBtn" class="manual-label">✍️ ${currentLanguage==='id'?'Tulis Soal Manual':'Type Question Manually'}</button>`;
         manualContainer.style.display='block';
         document.getElementById('manualTriggerBtn')?.addEventListener('click',()=>{
-            userInput.value='✍️ [Tulis soal di sini, contoh: 7 + 8 = ?]';
+            userInput.value='✍️ ' + (currentLanguage==='id'?'[Tulis soal di sini, contoh: 7 + 8 = ?]':'[Write your question here, e.g., 7 + 8 = ?]');
             userInput.focus();
             manualContainer.style.display='none';
         });
@@ -607,7 +616,14 @@
         autoResizeTextarea();
         showLoading();
         try{
-            const chatResponse = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatMessages, language: currentLanguage})});
+            const chatResponse = await fetch('/api/chat',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({
+                    messages: chatMessages,
+                    language: currentLanguage
+                })
+            });
             const chatData = await chatResponse.json();
             hideLoading();
             if(!chatResponse.ok){ const errMsg=chatData.error||(currentLanguage==='id'?'Ai Mi kelelahan.':'Ai Mi is tired.'); appendChat('ai',`💕 ${errMsg}`); chatMessages.push({role:'assistant',content:errMsg}); return; }
@@ -691,7 +707,7 @@
     updateDropdowns();
     switchMode('siswa');
     loadChatHistory();
-    console.log('✅ MindSeek.edu SD final siap (trigger dengan kelas)');
+    console.log('✅ MindSeek.edu SD final ready');
 </script>
 </body>
 </html>

@@ -1,23 +1,13 @@
-// api/chat.js
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-  
-  const { messages, language } = req.body;   // ← tambahkan language
-  if (!messages || !Array.isArray(messages)) {
-    return res.status(400).json({ error: 'Messages required' });
-  }
+// =========================================================
+// MindSeek.edu - API Chat (CommonJS version for Vercel)
+// =========================================================
 
-  const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
-  if (!DEEPSEEK_API_KEY) {
-    return res.status(500).json({ error: 'DeepSeek API key not configured' });
-  }
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
-  // =========================================================
-  // PROMPT BAHASA INDONESIA (FINAL)
-  // =========================================================
-  const SYSTEM_PROMPT_ID = `Kamu adalah Ai Mi (彭爱米), guru matematika untuk anak SD kelas 1–6 yang sabar, ramah, dan suka pakai emoji.
+// =========================================================
+// PROMPT BAHASA INDONESIA
+// =========================================================
+const SYSTEM_PROMPT_ID = `Kamu adalah Ai Mi (彭爱米), guru matematika untuk anak SD kelas 1–6 yang sabar, ramah, dan suka pakai emoji.
 
 🚫 ATURAN PALING PENTING (WAJIB):
 1. JANGAN PERNAH memberi jawaban langsung.
@@ -119,7 +109,7 @@ Tulis nomor pilihanmu ya! 🎉"
 🔁 Tujuanmu: anak paham dan percaya diri. Pakai emoji biar belajar seru. 💕`;
 
 // =========================================================
-// PROMPT BAHASA INGGRIS (SERUPA)
+// PROMPT BAHASA INGGRIS (TANPA CAMPUR INDONESIA)
 // =========================================================
 const SYSTEM_PROMPT_EN = `You are Ai Mi (彭爱米), a super patient and friendly elementary math tutor for grades 1-6 who loves emojis.
 
@@ -230,64 +220,75 @@ Write your choice! 🎉"
 
 🔁 Your goal: child understands and feels confident. Use emojis to make learning fun. 💕`;
 
-// =========================================================
-// PILIH BAHASA BERDASARKAN REQUEST (TIDAK DETEKSI OTOMATIS)
-// =========================================================
-const { messages, language } = req.body;  // ← pastikan ada language
-let systemPrompt = SYSTEM_PROMPT_ID;      // default ID
-if (language === 'en') {
-  systemPrompt = SYSTEM_PROMPT_EN;
-}
-
-const finalMessages = [{ role: 'system', content: systemPrompt }, ...messages];
-
+// Helper function retry
 async function fetchWithRetry(url, options, maxRetries = 3, initialDelay = 1000) {
-for (let attempt = 1; attempt <= maxRetries; attempt++) {
- try {
-   const response = await fetch(url, options);
-   if (response.status !== 429 && response.status !== 503) return response;
-   if (attempt === maxRetries) return response;
-   const delay = Math.min(initialDelay * Math.pow(2, attempt - 1), 10000) * (0.8 + Math.random() * 0.4);
-   console.log(`Retry attempt ${attempt} after ${Math.round(delay)}ms due to status ${response.status}`);
-   await new Promise(resolve => setTimeout(resolve, delay));
- } catch (err) {
-   if (attempt === maxRetries) throw err;
-   const delay = Math.min(initialDelay * Math.pow(2, attempt - 1), 10000);
-   console.log(`Retry attempt ${attempt} after ${Math.round(delay)}ms due to network error: ${err.message}`);
-   await new Promise(resolve => setTimeout(resolve, delay));
- }
-}
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.status !== 429 && response.status !== 503) return response;
+      if (attempt === maxRetries) return response;
+      const delay = Math.min(initialDelay * Math.pow(2, attempt - 1), 10000) * (0.8 + Math.random() * 0.4);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    } catch (err) {
+      if (attempt === maxRetries) throw err;
+      const delay = Math.min(initialDelay * Math.pow(2, attempt - 1), 10000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error('Max retries exceeded');
 }
 
-const requestBody = {
-model: 'deepseek-v4-flash',
-messages: finalMessages,
-temperature: 0.2,
-max_tokens: 1024
+// Handler utama (CommonJS style)
+module.exports = async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { messages, language } = req.body;
+  if (!messages || !Array.isArray(messages)) {
+    return res.status(400).json({ error: 'Messages required' });
+  }
+
+  if (!DEEPSEEK_API_KEY) {
+    return res.status(500).json({ error: 'DeepSeek API key not configured' });
+  }
+
+  // Pilih prompt berdasarkan language
+  let systemPrompt = SYSTEM_PROMPT_ID;
+  if (language === 'en') {
+    systemPrompt = SYSTEM_PROMPT_EN;
+  }
+
+  const finalMessages = [{ role: 'system', content: systemPrompt }, ...messages];
+
+  const requestBody = {
+    model: 'deepseek-v4-flash',  // gunakan flash, lebih murah & cepat
+    messages: finalMessages,
+    temperature: 0.2,
+    max_tokens: 1024
+  };
+
+  try {
+    const response = await fetchWithRetry('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('DeepSeek API error:', data);
+      return res.status(response.status).json({ error: data.error?.message || 'DeepSeek error' });
+    }
+
+    const aiReply = data.choices?.[0]?.message?.content || (systemPrompt === SYSTEM_PROMPT_ID ? 'Maaf, Ai Mi tidak bisa menjawab.' : 'Sorry, Ai Mi cannot answer.');
+    return res.status(200).json({ reply: aiReply });
+  } catch (err) {
+    console.error('Proxy error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 };
-
-try {
-const response = await fetchWithRetry('https://api.deepseek.com/v1/chat/completions', {
- method: 'POST',
- headers: {
-   'Content-Type': 'application/json',
-   'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
- },
- body: JSON.stringify(requestBody)
-});
-
-const data = await response.json();
-
-if (!response.ok) {
- console.error('DeepSeek API error:', data);
- return res.status(response.status).json({ error: data.error?.message || 'DeepSeek error' });
-}
-
-const aiReply = data.choices?.[0]?.message?.content || (systemPrompt === SYSTEM_PROMPT_ID ? 'Maaf, Ai Mi tidak bisa menjawab.' : 'Sorry, Ai Mi cannot answer.');
-return res.status(200).json({ reply: aiReply });
-} catch (err) {
-console.error('Proxy error:', err);
-return res.status(500).json({ error: 'Internal server error' });
-}
-}
-
