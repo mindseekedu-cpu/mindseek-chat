@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <title>MindSeek.edu · Belajar Matematika SD dengan Ai Mi</title>
+    <title>MindSeek.edu · Belajar dengan Ai Mi</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -289,26 +289,78 @@
             margin-bottom: 16px;
         }
         .report-card h3 { color: #0288d1; margin-bottom: 10px; font-size: 1rem; }
-        .chat-history-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #e0f2fe;
+        .report-card table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 0.8rem;
         }
-        .wa-btn, .refresh-btn {
-            width: 100%;
-            padding: 12px;
-            background: #25D366;
+        .report-card th, .report-card td {
+            border: 1px solid #cfe6f2;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        .report-card th {
+            background: #eef5fc;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .hidden { display: none; }
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            max-width: 90%;
+            width: 800px;
+            max-height: 80%;
+            overflow-y: auto;
+            border-radius: 20px;
+            padding: 16px;
+        }
+        .close-btn {
+            float: right;
+            background: #dc2626;
             color: white;
             border: none;
-            border-radius: 48px;
-            font-size: 0.9rem;
-            font-weight: bold;
+            border-radius: 20px;
+            padding: 4px 12px;
+            cursor: pointer;
+        }
+        .guidance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .guidance-table th, .guidance-table td {
+            border: 1px solid #cfe6f2;
+            padding: 6px 8px;
+            font-size: 0.75rem;
+        }
+        .resolve-checkbox {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+        .btn-secondary {
+            background: #f0ad4e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
             cursor: pointer;
             margin-top: 8px;
         }
-        .refresh-btn { background: #f0ad4e; width: auto; padding: 8px 16px; font-size: 0.8rem; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-        .hidden { display: none; }
         @media (max-width: 600px) {
             .container { padding: 12px; }
             .msg { max-width: 90%; font-size: 0.85rem; }
@@ -352,23 +404,27 @@
 <!-- MODE SISWA -->
 <div class="container" id="studentView">
     <div id="selectionPanel" class="selection-panel">
-        <div class="selection-row"><label id="gradeLabel">Grade</label><select id="gradeSelect"></select></div>
-        <div class="selection-row"><label id="topicLabel">Topic</label><select id="topicSelect" disabled></select></div>
-        <div class="selection-row"><label id="subjectLabel">Subject</label><select id="subjectSelect"></select></div>
+        <div class="selection-row"><label>Grade</label><select id="gradeSelect"></select></div>
+        <div class="selection-row"><label>Topic</label><select id="topicSelect" disabled></select></div>
+        <div class="selection-row"><label>Subject</label><select id="subjectSelect"></select></div>
+        <div class="selection-row"><label>Mode</label><select id="sessionTypeSelect">
+            <option value="Practice">Latihan (Practice)</option>
+            <option value="PR">PR (Homework)</option>
+        </select></div>
     </div>
     <div id="summaryChip" class="summary-chip hidden">
-        <div id="chipText" class="chip-text">📐 Mathematics · Grade 3 · Fractions</div>
+        <div id="chipText" class="chip-text"></div>
         <button id="editSelectionBtn" class="edit-icon">✏️ Edit</button>
     </div>
     <div class="chat-box" id="chatBox">
-        <div class="msg system-info">🌸 Hi! Aku Ai Mi, tutor matematika SD yang sabar. Silakan pilih kelas, topik, dan mata pelajaran untuk memulai. 🌸</div>
+        <div class="msg system-info">🌸 Hi! Aku Ai Mi, siap membantumu belajar. Pilih kelas, topik, dan mata pelajaran untuk memulai.</div>
     </div>
     <div class="input-row">
         <textarea id="userInput" placeholder="Tanya Ai Mi atau upload PR..." rows="1"></textarea>
     </div>
     <div class="button-row">
         <button id="sendBtn" class="send-btn">Send</button>
-        <label for="fileInput" class="upload-label" id="uploadLabel">Upload</label>
+        <label for="fileInput" class="upload-label">Upload</label>
         <input type="file" id="fileInput" accept="image/*" style="display:none;">
         <button id="clearTextBtn" class="clear-text-btn">Clear Text</button>
         <button id="deleteHistoryBtn" class="delete-history-btn">Delete History</button>
@@ -378,19 +434,39 @@
 
 <!-- MODE ORANG TUA -->
 <div class="container hidden" id="parentView">
-    <div id="pinSection"><div class="pin-section"><h2>🔒 Parent Access</h2><p>Enter PIN to view learning report</p><input type="password" id="pinInput" maxlength="4" placeholder="1234" inputmode="numeric"><button id="pinLoginBtn">Login</button></div></div>
-    <div id="reportSection" class="hidden"><div class="report-card"><div class="flex-between"><h3>📊 Learning Summary</h3><button id="refreshReportBtn" class="refresh-btn">↻ Refresh</button></div><div id="reportSummary">Loading...</div></div><div class="report-card"><h3>💬 Chat History (last 20)</h3><div id="chatHistory">Loading...</div></div><button id="waSimulateBtn" class="wa-btn">📱 Send Report to WhatsApp (Simulation)</button><p style="font-size:11px; text-align:center; margin-top:10px;">*Real integration via WhatsApp Business API</p></div>
+    <div id="pinSection">
+        <div class="pin-section">
+            <h2>🔒 Parent Access</h2>
+            <p>Enter PIN to view learning report</p>
+            <input type="password" id="pinInput" maxlength="4" placeholder="1234" inputmode="numeric">
+            <button id="pinLoginBtn">Login</button>
+        </div>
+    </div>
+    <div id="reportSection" class="hidden">
+        <div class="report-card">
+            <div class="flex-between">
+                <h3>📊 Ringkasan Belajar</h3>
+                <button id="refreshReportBtn" class="btn-secondary">↻ Refresh</button>
+            </div>
+            <div id="reportSummary">Loading...</div>
+        </div>
+        <div class="flex-between" style="margin-top: 8px;">
+            <button id="viewTopicProgressBtn" class="btn-secondary">📈 Lihat Progress per Topik</button>
+            <button id="viewGuidanceBtn" class="btn-secondary">📋 Lihat Daftar Soal Perlu Dampingan</button>
+        </div>
+    </div>
 </div>
 
 <script>
     // =========================================================
-    // KONFIGURASI & UI dengan METADATA (Grade, Topic, Subject, Language)
+    // KONFIGURASI & UI
     // =========================================================
     const USER_ID = 'siswa_001';
     let currentLanguage = 'id';
     let currentGrade = '';
     let currentTopic = '';
     let currentSubject = 'Matematika';
+    let currentSessionType = 'Practice'; // 'Practice' atau 'PR'
     let selectionsMade = false;
     let chatMessages = [];
     let isLoading = false;
@@ -421,6 +497,7 @@
     const gradeSelect = document.getElementById('gradeSelect');
     const topicSelect = document.getElementById('topicSelect');
     const subjectSelect = document.getElementById('subjectSelect');
+    const sessionTypeSelect = document.getElementById('sessionTypeSelect');
     const selectionPanel = document.getElementById('selectionPanel');
     const summaryChip = document.getElementById('summaryChip');
     const chipText = document.getElementById('chipText');
@@ -428,15 +505,9 @@
 
     function autoResizeTextarea() { userInput.style.height = 'auto'; userInput.style.height = Math.min(userInput.scrollHeight, 150) + 'px'; }
     userInput.addEventListener('input', autoResizeTextarea);
-
     function updatePlaceholder() {
-        if (currentLanguage === 'id') {
-            userInput.placeholder = 'Tanya Ai Mi atau upload PR...';
-        } else {
-            userInput.placeholder = 'Ask Ai Mi or upload homework...';
-        }
+        userInput.placeholder = currentLanguage === 'id' ? 'Tanya Ai Mi atau upload PR...' : 'Ask Ai Mi or upload homework...';
     }
-
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
     function renderMarkdown(text) { return escapeHtml(text).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>'); }
     function appendChat(role, text, isSystem=false) { const div = document.createElement('div'); div.className = `msg ${role}`; if (isSystem) div.classList.add('system-info'); if (role === 'ai') div.innerHTML = renderMarkdown(text); else div.textContent = text; chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight; }
@@ -468,30 +539,32 @@
     function checkAllSelected() {
         const grade = gradeSelect.value, topic = topicSelect.value, subject = subjectSelect.value;
         if (grade && topic && subject && grade !== "" && topic !== "") {
-            selectionsMade = true; currentGrade = grade; currentTopic = topic; currentSubject = subject;
-            selectionPanel.classList.add('hidden'); summaryChip.classList.remove('hidden');
+            selectionsMade = true;
+            currentGrade = grade;
+            currentTopic = topic;
+            currentSubject = subject;
+            currentSessionType = sessionTypeSelect.value;
+            selectionPanel.classList.add('hidden');
+            summaryChip.classList.remove('hidden');
             let subjectLabel = subject;
             if (currentLanguage === 'id') subjectLabel = subject === 'Matematika' ? '📐 Matematika' : subject;
             else subjectLabel = subject === 'Mathematics' ? '📐 Mathematics' : subject;
-            chipText.innerHTML = `${subjectLabel} · ${grade} · ${topic}`;
+            chipText.innerHTML = `${subjectLabel} · ${grade} · ${topic} · ${currentSessionType === 'PR' ? 'PR' : (currentLanguage==='id'?'Latihan':'Practice')}`;
             sendContextAndGreeting();
         } else { selectionPanel.classList.remove('hidden'); summaryChip.classList.add('hidden'); selectionsMade = false; }
     }
 
-    // =========================================================
-    // PENTING: Trigger dengan metadata grade, topic, language
-    // =========================================================
     async function sendContextAndGreeting() {
         if (!selectionsMade) return;
         let gradeNumber = currentGrade.replace(/\D/g, '');
         if (gradeNumber === '') gradeNumber = '1';
-        // Ambil topic dalam bahasa yang sesuai (sudah dalam bahasa yang dipilih)
         const topicName = currentTopic;
-        
-        const triggerMessage = currentLanguage === 'id' 
-            ? `Halo Ai Mi (彭爱米), saya kelas ${gradeNumber}, topik ${topicName}. Siap belajar dengan bahasa Indonesia`
-            : `Hi Ai Mi, I am in grade ${gradeNumber}, topic ${topicName}. Ready to learn in English`;
-        
+        let triggerMessage;
+        if (currentLanguage === 'id') {
+            triggerMessage = `Halo Ai Mi, saya kelas ${gradeNumber}, topik ${topicName}. Siap belajar dengan bahasa Indonesia`;
+        } else {
+            triggerMessage = `Hi Ai Mi, I am in grade ${gradeNumber}, topic ${topicName}. Ready to learn in English`;
+        }
         userInput.value = triggerMessage;
         await sendMessage(true);
         setTimeout(() => {
@@ -500,41 +573,70 @@
         }, 50);
     }
 
-    async function loadChatHistory() {
+    async function sendMessage(skipClear=false) {
+        let message = userInput.value.trim();
+        if (!message || isLoading) return;
+        isLoading = true;
+        sendBtn.disabled = true;
+        userInput.disabled = true;
+        uploadLabel.style.pointerEvents = 'none';
+        appendChat('user', message);
+        chatMessages.push({ role: 'user', content: message });
+        if (!skipClear) userInput.value = '';
+        autoResizeTextarea();
+        showLoading();
         try {
-            const response = await fetch(`/api/report?user_id=${USER_ID}`);
-            if (!response.ok) return;
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: chatMessages,
+                    language: currentLanguage,
+                    grade: currentGrade,
+                    topic: currentTopic,
+                    subject: currentSubject,
+                    session_type: currentSessionType
+                })
+            });
             const data = await response.json();
-            if (!data.chats || data.chats.length === 0) return;
-            const chats = data.chats.reverse();
-            while (chatBox.children.length > 0) chatBox.removeChild(chatBox.firstChild);
-            for (const chat of chats) {
-                appendChat('user', chat.user_message);
-                appendChat('ai', chat.ai_message);
-                chatMessages.push({ role: 'user', content: chat.user_message }, { role: 'assistant', content: chat.ai_message });
+            hideLoading();
+            if (!response.ok) {
+                const errMsg = data.error || (currentLanguage==='id'?'Ai Mi kelelahan.':'Ai Mi is tired.');
+                appendChat('ai', `💕 ${errMsg}`);
+                chatMessages.push({ role: 'assistant', content: errMsg });
+                return;
             }
-            chatBox.scrollTop = chatBox.scrollHeight;
-        } catch(e) { console.warn(e); }
+            const aiReply = data.reply || (currentLanguage==='id'?'Maaf, Ai Mi tidak bisa menjawab.':'Sorry, Ai Mi cannot answer.');
+            appendChat('ai', aiReply);
+            chatMessages.push({ role: 'assistant', content: aiReply });
+            // Simpan chat ke backend (tanpa menunggu)
+            fetch('/api/save-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: USER_ID,
+                    user_message: message,
+                    ai_message: aiReply,
+                    subject: currentSubject,
+                    grade: currentGrade,
+                    topic: currentTopic,
+                    session_type: currentSessionType
+                })
+            }).catch(e => console.warn('Save chat error:', e));
+        } catch (err) {
+            hideLoading();
+            console.error(err);
+            appendChat('ai', currentLanguage==='id'?'💕 Gangguan jaringan. Coba lagi.':'💕 Network error. Try again.');
+        } finally {
+            isLoading = false;
+            sendBtn.disabled = false;
+            userInput.disabled = false;
+            uploadLabel.style.pointerEvents = 'auto';
+            userInput.blur();
+        }
     }
 
-    async function deleteHistory() {
-        try {
-            const response = await fetch('/api/delete-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: USER_ID }) });
-            if (!response.ok) throw new Error('Delete failed');
-            while (chatBox.children.length > 0) chatBox.removeChild(chatBox.firstChild);
-            chatMessages = [];
-            selectionsMade = false;
-            selectionPanel.classList.remove('hidden');
-            summaryChip.classList.add('hidden');
-            gradeSelect.value = "";
-            topicSelect.disabled = true;
-            topicSelect.innerHTML = '<option value="" disabled selected>-- ' + (currentLanguage==='id'?'Pilih Topik':'Select Topic') + ' --</option>';
-            subjectSelect.value = currentLanguage==='id'?'Matematika':'Mathematics';
-            appendChat('system-info', currentLanguage==='id'?'Riwayat percakapan dihapus. Silakan pilih kelas dan topik untuk memulai.':'Chat history deleted. Please select grade and topic to start.', true);
-        } catch(err) { console.error(err); showSystemMessage(currentLanguage==='id'?'Gagal menghapus riwayat. Coba lagi.':'Failed to delete history. Try again.'); }
-    }
-
-    // OCR functions (sama seperti sebelumnya)
+    // OCR functions (ringkas)
     async function compressImage(file, maxWidth=1024, quality=0.8) {
         return new Promise((resolve,reject)=>{
             const reader=new FileReader();
@@ -590,113 +692,240 @@
     fileInput.addEventListener('change', async function(event){
         const file=event.target.files[0];
         if(!file) return;
-        if(isLoading){ showSystemMessage(currentLanguage==='id'?'⏳ Tunggu sebentar...':'⏳ Please wait...'); fileInput.value=''; return; }
+        if(isLoading){ showSystemMessage(currentLanguage==='id'?'⏳ Tunggu...':'⏳ Please wait...'); fileInput.value=''; return; }
         uploadLabel.classList.add('disabled');
         showSystemMessage(currentLanguage==='id'?'📸 Memproses gambar...':'📸 Processing image...');
         try{
             const compressed=await compressImage(file,1024,0.8);
-            showSystemMessage(currentLanguage==='id'?'📸 Gambar dikompres. Kirim ke server OCR...':'📸 Image compressed. Sending to OCR...');
             let text=await extractTextWithOcrSpace(compressed);
             text=normalizeMathNotation(text);
-            if(text.replace(/[^a-zA-Z0-9+\-*/^=()xX\s]/g,'').length<10){ showSystemMessage(currentLanguage==='id'?'⚠️ Teks tidak terbaca jelas. Silakan tulis manual.':'⚠️ Text unclear. Please type manually.'); showManualInputButton(); uploadLabel.classList.remove('disabled'); fileInput.value=''; return; }
-            showSystemMessage(`${currentLanguage==='id'?'📖 Teks terbaca:\n':'📖 Extracted text:\n'}${text.substring(0,300)}${text.length>300?'...':''}`);
+            if(text.replace(/[^a-zA-Z0-9+\-*/^=()xX\s]/g,'').length<10){
+                showSystemMessage(currentLanguage==='id'?'⚠️ Teks tidak terbaca. Silakan tulis manual.':'⚠️ Text unclear. Please type manually.');
+                showManualInputButton();
+                uploadLabel.classList.remove('disabled');
+                fileInput.value='';
+                return;
+            }
+            showSystemMessage(`${currentLanguage==='id'?'📖 Teks terbaca:\n':'📖 Extracted text:\n'}${text.substring(0,300)}`);
             userInput.value=`${currentLanguage==='id'?'Soal:\n':'Question:\n'}${text}`;
             await sendMessage(true);
             userInput.value = ''; autoResizeTextarea();
-        }catch(err){ showSystemMessage(`${currentLanguage==='id'?'💥 Gagal: ':'💥 Failed: '}${err.message}. ${currentLanguage==='id'?'Coba foto jelas.':'Take a clearer photo.'}`); showManualInputButton(); }
-        finally{ uploadLabel.classList.remove('disabled'); fileInput.value=''; }
+        }catch(err){
+            showSystemMessage(`${currentLanguage==='id'?'💥 Gagal: ':'💥 Failed: '}${err.message}`);
+            showManualInputButton();
+        } finally {
+            uploadLabel.classList.remove('disabled');
+            fileInput.value='';
+        }
     });
 
-    // =========================================================
-    // PENTING: Kirim metadata (grade, topic, subject, language) ke API
-    // =========================================================
-    async function sendMessage(skipClear=false){
-        let message = userInput.value.trim();
-        if(!message||isLoading) return;
-        message = normalizeMathNotation(message);
-        isLoading=true;
-        sendBtn.disabled=true;
-        userInput.disabled=true;
-        uploadLabel.style.pointerEvents='none';
-        appendChat('user',message);
-        chatMessages.push({role:'user',content:message});
-        if(!skipClear) userInput.value='';
-        autoResizeTextarea();
-        showLoading();
-        try{
-            const chatResponse = await fetch('/api/chat',{
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({
-                    messages: chatMessages,
-                    language: currentLanguage,
-                    grade: currentGrade,
-                    topic: currentTopic,
-                    subject: currentSubject
-                })
-            });
-            const chatData = await chatResponse.json();
-            hideLoading();
-            if(!chatResponse.ok){ const errMsg=chatData.error||(currentLanguage==='id'?'Ai Mi kelelahan.':'Ai Mi is tired.'); appendChat('ai',`💕 ${errMsg}`); chatMessages.push({role:'assistant',content:errMsg}); return; }
-            const aiReply=chatData.reply||(currentLanguage==='id'?'Maaf, Ai Mi tidak bisa menjawab.':'Sorry, Ai Mi cannot answer.');
-            appendChat('ai',aiReply);
-            chatMessages.push({role:'assistant',content:aiReply});
-            await fetch('/api/save-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:USER_ID,user_message:message,ai_message:aiReply,subject:subjectSelect.value})});
-        }catch(err){ hideLoading(); console.error(err); appendChat('ai',currentLanguage==='id'?'💕 Gangguan jaringan. Coba lagi.':'💕 Network error. Try again.'); }
-        finally{ 
-            isLoading=false; 
-            sendBtn.disabled=false; 
-            userInput.disabled=false; 
-            uploadLabel.style.pointerEvents='auto'; 
-            userInput.blur();
+    // ========== PARENT MODE ==========
+    async function loadParentReport() {
+        const summaryDiv = document.getElementById('reportSummary');
+        summaryDiv.innerHTML = 'Loading...';
+        try {
+            const response = await fetch(`/api/learning-summary?user_id=${USER_ID}`);
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+            if (!data.topics || data.topics.length === 0) {
+                summaryDiv.innerHTML = '<p>Belum ada data belajar.</p>';
+                return;
+            }
+            let html = '';
+            // PR Section
+            const prTopics = data.topics.filter(t => t.session_type === 'PR');
+            if (prTopics.length > 0) {
+                html += `<h4>📝 PR (Homework)</h4>`;
+                html += `<table><tr><th>Topik</th><th>Total</th><th>Tuntas</th><th>Mandiri</th><th>Dibantu</th><th>Ganti</th><th>Dampingan</th></tr>`;
+                for (const t of prTopics) {
+                    html += `<tr><td>${escapeHtml(t.topic)}</td><td>${t.total_questions}</td><td>${t.completed}</td><td>${t.independent}</td><td>${t.assisted}</td><td>${t.skipped}</td><td>${t.need_guidance}</td></tr>`;
+                }
+                html += `</table><p><small>ℹ️ PR bersifat membantu tugas sekolah, tidak memengaruhi progress per topik.</small></p>`;
+            }
+            // Practice Section
+            const practiceTopics = data.topics.filter(t => t.session_type === 'Practice');
+            if (practiceTopics.length > 0) {
+                html += `<h4>📚 LATIHAN (Practice)</h4>`;
+                html += `<table><tr><th>Topik</th><th>Total</th><th>Tuntas</th><th>Mandiri</th><th>Dibantu</th><th>Ganti</th><th>Dampingan</th><th>Kemandirian</th></tr>`;
+                for (const t of practiceTopics) {
+                    html += `<tr><td>${escapeHtml(t.topic)}</td><td>${t.total_questions}</td><td>${t.completed}</td><td>${t.independent}</td><td>${t.assisted}</td><td>${t.skipped}</td><td>${t.need_guidance}</td><td>${t.independence_percentage}%</td></tr>`;
+                }
+                html += `</table>`;
+                if (data.comparison) {
+                    html += `<p>📈 Perbandingan (${escapeHtml(data.comparison.topic)}): Hari ini vs kemarin: ${data.comparison.change}%<br>Rata-rata 7 hari: ${data.comparison.week_avg}%</p>`;
+                }
+            }
+            if (data.ai_note) html += `<p>📝 Catatan Ai Mi: ${escapeHtml(data.ai_note)}</p>`;
+            if (data.consistency_7_days) html += `<p>📅 Konsistensi 7 hari: ${data.consistency_7_days.symbols} (${data.consistency_7_days.active} aktif)</p>`;
+            if (data.consistency_30_days) html += `<p>📅 Konsistensi 30 hari (${data.consistency_30_days.month}): ✅(${data.consistency_30_days.active} aktif) ❌(${data.consistency_30_days.inactive} tidak aktif)</p>`;
+            if (data.top_topics && data.top_topics.length) {
+                html += `<p>🔥 Topik paling sering diulang (30 hari):<br>${data.top_topics.map(t => `${t.topic} (${t.sessions} sesi, ${t.total_questions} soal)`).join('<br>')}</p>`;
+            }
+            summaryDiv.innerHTML = html;
+        } catch (err) {
+            console.error(err);
+            summaryDiv.innerHTML = 'Gagal memuat ringkasan.';
         }
     }
 
-    async function loadParentReport(){
-        const summaryDiv=document.getElementById('reportSummary');
-        const historyDiv=document.getElementById('chatHistory');
-        summaryDiv.innerHTML='Loading...'; historyDiv.innerHTML='Loading...';
-        try{
-            const response=await fetch(`/api/report?user_id=${USER_ID}`);
-            if(!response.ok) throw new Error();
-            const data=await response.json();
-            if(!data.chats||data.chats.length===0){ summaryDiv.innerHTML='No conversations yet.'; historyDiv.innerHTML='<div>Empty.</div>'; return; }
-            const chats=data.chats;
-            let total=chats.length, subjCount={}, lastActive=new Date(chats[0].timestamp).toLocaleString('id-ID');
-            for(let c of chats){ let s=c.subject||'Matematika'; subjCount[s]=(subjCount[s]||0)+1; }
-            let topSubject=Object.entries(subjCount).sort((a,b)=>b[1]-a[1])[0]?.[0]||'Matematika';
-            summaryDiv.innerHTML=`<p>📌 Total conversations: ${total}</p><p>📚 Favorite subject: ${topSubject}</p><p>🕒 Last active: ${lastActive}</p>`;
-            const recent=chats.slice(0,20);
-            historyDiv.innerHTML=recent.map(c=>`<div class="chat-history-item"><div><strong>🧑‍🎓 Student:</strong> ${escapeHtml(c.user_message?.substring(0,150)||'')}</div><div><strong>🤖 Ai Mi:</strong> ${escapeHtml(c.ai_message?.substring(0,120)||'')}...</div><div style="font-size:0.7rem;">📅 ${new Date(c.timestamp).toLocaleString('id-ID')} · ${c.subject}</div></div>`).join('');
-            if(chats.length>20) historyDiv.innerHTML+=`<div>... and ${chats.length-20} more</div>`;
-        }catch(err){ summaryDiv.innerHTML='Failed to load report.'; historyDiv.innerHTML='Error'; }
+    // Progress per Topik modal
+    let topicProgressModal = null;
+    async function showTopicProgress() {
+        const response = await fetch(`/api/topic-progress?user_id=${USER_ID}&grade=${encodeURIComponent(currentGrade || 'Kelas 2')}`);
+        if (!response.ok) { alert('Gagal memuat progress'); return; }
+        const data = await response.json();
+        let html = `<h3>📈 Progress per Topik - Kelas ${data.grade}</h3>`;
+        if (data.topics.length === 0) { html += '<p>Belum ada data latihan.</p>'; }
+        else {
+            html += `<table class="guidance-table"><tr><th>Topik</th><th>Total</th><th>Mandiri</th><th>Persen</th><th>Distribusi</th><th>Status Data</th><th>Evaluasi</th><th>Terakhir</th></tr>`;
+            for (const t of data.topics) {
+                html += `<tr><td>${escapeHtml(t.topic)}</td><td>${t.total_questions}</td><td>${t.independent_count}</td><td>${t.percentage}%</td><td>${t.distribution}</td><td>${t.data_status}</td><td>${t.evaluation || '-'}</td><td>${t.last_practiced ? new Date(t.last_practiced).toLocaleDateString() : '-'}</td></tr>`;
+            }
+            html += `</table>`;
+        }
+        if (data.ai_note) html += `<p>📝 Rekomendasi Ai Mi:<br>${escapeHtml(data.ai_note)}</p>`;
+        if (topicProgressModal) topicProgressModal.remove();
+        topicProgressModal = document.createElement('div');
+        topicProgressModal.className = 'modal';
+        topicProgressModal.innerHTML = `<div class="modal-content"><button class="close-btn">Tutup</button>${html}</div>`;
+        document.body.appendChild(topicProgressModal);
+        topicProgressModal.querySelector('.close-btn').onclick = () => topicProgressModal.remove();
     }
-    function loginParent(pin){ if(pin==='1234'){ isParentLogged=true; document.getElementById('pinSection').classList.add('hidden'); document.getElementById('reportSection').classList.remove('hidden'); loadParentReport(); } else alert(currentLanguage==='id'?'PIN salah! Gunakan 1234.':'Wrong PIN! Use 1234.'); }
-    function simulateWhatsApp(){ const summaryText=document.getElementById('reportSummary').innerText||'Learning report'; alert(`📱 SIMULATION: ${summaryText}\n\n(Real integration coming soon)`); }
-    function switchMode(mode){
-        currentMode=mode;
-        if(mode==='siswa'){ studentView.classList.remove('hidden'); parentView.classList.add('hidden'); }
-        else{ studentView.classList.add('hidden'); parentView.classList.remove('hidden'); if(!isParentLogged){ document.getElementById('pinSection').classList.remove('hidden'); document.getElementById('reportSection').classList.add('hidden'); } else{ document.getElementById('pinSection').classList.add('hidden'); document.getElementById('reportSection').classList.remove('hidden'); loadParentReport(); } }
-        document.querySelectorAll('.mode-btn').forEach(btn=>{ if(btn.getAttribute('data-mode')===mode) btn.classList.add('active'); else btn.classList.remove('active'); });
-    }
-    function clearText(){ userInput.value=''; autoResizeTextarea(); userInput.focus(); }
 
-    // ========== EVENT LISTENERS ==========
-    gradeSelect.addEventListener('change',()=>{ updateTopicDropdown(); topicSelect.value=""; checkAllSelected(); });
-    topicSelect.addEventListener('change',checkAllSelected);
-    subjectSelect.addEventListener('change',checkAllSelected);
-    editBtn.addEventListener('click',()=>{ selectionPanel.classList.remove('hidden'); summaryChip.classList.add('hidden'); selectionsMade=false; });
-    clearTextBtn.addEventListener('click',clearText);
-    deleteHistoryBtn.addEventListener('click',deleteHistory);
-    sendBtn.addEventListener('click',()=>sendMessage());
-    document.getElementById('pinLoginBtn').addEventListener('click',()=>{ const pin=document.getElementById('pinInput').value; loginParent(pin); });
-    document.getElementById('refreshReportBtn').addEventListener('click',loadParentReport);
-    document.getElementById('waSimulateBtn').addEventListener('click',simulateWhatsApp);
+    // Daftar Soal Dampingan modal
+    let guidanceModal = null;
+    async function showGuidanceQuestions() {
+        const response = await fetch(`/api/guidance-questions?user_id=${USER_ID}`);
+        if (!response.ok) { alert('Gagal memuat daftar'); return; }
+        const data = await response.json();
+        const questions = data.questions || [];
+        const unresolved = questions.filter(q => !q.resolved);
+        const resolved = questions.filter(q => q.resolved);
+        let html = `<h3>📋 Soal Perlu Dampingan - Belum Selesai</h3>`;
+        // PR dulu
+        const prUnresolved = unresolved.filter(q => q.mode === 'PR');
+        if (prUnresolved.length) {
+            html += `<h4>PR (Homework)</h4><table class="guidance-table"><tr><th>Tanggal</th><th>Topik</th><th>Level</th><th>Soal</th><th>Kunci</th><th>Langkah Ajar</th><th>Status</th><th>Selesai?</th></tr>`;
+            for (const q of prUnresolved) {
+                html += `<tr>
+                    <td>${new Date(q.created_at).toLocaleDateString()}</td>
+                    <td>${escapeHtml(q.topic)}</td>
+                    <td>${escapeHtml(q.difficulty)}</td>
+                    <td>${escapeHtml(q.question_text)}</td>
+                    <td>${escapeHtml(q.answer_key || '')}</td>
+                    <td>${escapeHtml(q.teaching_steps || '')}</td>
+                    <td>${escapeHtml(q.status)}</td>
+                    <td><input type="checkbox" class="resolve-checkbox" data-id="${q.id}"></td>
+                </tr>`;
+            }
+            html += `</table>`;
+        }
+        const practiceUnresolved = unresolved.filter(q => q.mode === 'Practice');
+        if (practiceUnresolved.length) {
+            html += `<h4>Latihan (Practice)</h4><table class="guidance-table"><tr><th>Tanggal</th><th>Topik</th><th>Level</th><th>Soal</th><th>Kunci</th><th>Langkah Ajar</th><th>Status</th><th>Selesai?</th></tr>`;
+            for (const q of practiceUnresolved) {
+                html += `<tr>
+                    <td>${new Date(q.created_at).toLocaleDateString()}</td>
+                    <td>${escapeHtml(q.topic)}</td>
+                    <td>${escapeHtml(q.difficulty)}</td>
+                    <td>${escapeHtml(q.question_text)}</td>
+                    <td>${escapeHtml(q.answer_key || '')}</td>
+                    <td>${escapeHtml(q.teaching_steps || '')}</td>
+                    <td>${escapeHtml(q.status)}</td>
+                    <td><input type="checkbox" class="resolve-checkbox" data-id="${q.id}"></td>
+                </tr>`;
+            }
+            html += `</table>`;
+        }
+        html += `<h3>✅ Sudah Selesai (didampingi)</h3><table class="guidance-table"><tr><th>Mode</th><th>Tanggal</th><th>Topik</th><th>Soal</th><th>Status</th></tr>`;
+        for (const q of resolved) {
+            html += `<tr>
+                <td>${q.mode === 'PR' ? 'PR' : 'Latihan'}</td>
+                <td>${new Date(q.created_at).toLocaleDateString()}</td>
+                <td>${escapeHtml(q.topic)}</td>
+                <td>${escapeHtml(q.question_text)}</td>
+                <td>${escapeHtml(q.status)}</td>
+            </tr>`;
+        }
+        html += `</table><button id="saveGuidanceBtn" class="btn-secondary">Simpan perubahan</button>`;
+        if (guidanceModal) guidanceModal.remove();
+        guidanceModal = document.createElement('div');
+        guidanceModal.className = 'modal';
+        guidanceModal.innerHTML = `<div class="modal-content"><button class="close-btn">Tutup</button>${html}</div>`;
+        document.body.appendChild(guidanceModal);
+        guidanceModal.querySelector('.close-btn').onclick = () => guidanceModal.remove();
+        document.getElementById('saveGuidanceBtn')?.addEventListener('click', async () => {
+            const checkboxes = guidanceModal.querySelectorAll('.resolve-checkbox:checked');
+            for (const cb of checkboxes) {
+                const id = cb.getAttribute('data-id');
+                await fetch('/api/guidance-questions', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, resolved: true })
+                });
+            }
+            alert('Perubahan disimpan');
+            guidanceModal.remove();
+            showGuidanceQuestions(); // refresh
+        });
+    }
+
+    // Parent login
+    function loginParent(pin) {
+        if (pin === '1234') {
+            isParentLogged = true;
+            document.getElementById('pinSection').classList.add('hidden');
+            document.getElementById('reportSection').classList.remove('hidden');
+            loadParentReport();
+        } else {
+            alert(currentLanguage === 'id' ? 'PIN salah! Gunakan 1234.' : 'Wrong PIN! Use 1234.');
+        }
+    }
+
+    function switchMode(mode) {
+        currentMode = mode;
+        if (mode === 'siswa') {
+            studentView.classList.remove('hidden');
+            parentView.classList.add('hidden');
+        } else {
+            studentView.classList.add('hidden');
+            parentView.classList.remove('hidden');
+            if (!isParentLogged) {
+                document.getElementById('pinSection').classList.remove('hidden');
+                document.getElementById('reportSection').classList.add('hidden');
+            } else {
+                document.getElementById('pinSection').classList.add('hidden');
+                document.getElementById('reportSection').classList.remove('hidden');
+                loadParentReport();
+            }
+        }
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            if (btn.getAttribute('data-mode') === mode) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+
+    function clearText() { userInput.value = ''; autoResizeTextarea(); userInput.focus(); }
+    function deleteHistory() { if (confirm('Hapus riwayat percakapan?')) { chatMessages = []; while (chatBox.children.length > 0) chatBox.removeChild(chatBox.firstChild); appendChat('system-info', 'Riwayat dihapus. Pilih kelas, topik, dan mata pelajaran untuk memulai.', true); selectionsMade = false; selectionPanel.classList.remove('hidden'); summaryChip.classList.add('hidden'); } }
+
+    // Event listeners
+    gradeSelect.addEventListener('change', () => { updateTopicDropdown(); topicSelect.value = ""; checkAllSelected(); });
+    topicSelect.addEventListener('change', checkAllSelected);
+    subjectSelect.addEventListener('change', checkAllSelected);
+    sessionTypeSelect.addEventListener('change', () => { if (selectionsMade) checkAllSelected(); });
+    editBtn.addEventListener('click', () => { selectionPanel.classList.remove('hidden'); summaryChip.classList.add('hidden'); selectionsMade = false; });
+    clearTextBtn.addEventListener('click', clearText);
+    deleteHistoryBtn.addEventListener('click', deleteHistory);
+    sendBtn.addEventListener('click', () => sendMessage());
+    document.getElementById('pinLoginBtn').addEventListener('click', () => { const pin = document.getElementById('pinInput').value; loginParent(pin); });
+    document.getElementById('refreshReportBtn')?.addEventListener('click', loadParentReport);
+    document.getElementById('viewTopicProgressBtn')?.addEventListener('click', showTopicProgress);
+    document.getElementById('viewGuidanceBtn')?.addEventListener('click', showGuidanceQuestions);
 
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             const lang = btn.getAttribute('data-lang');
-            if(lang === currentLanguage) return;
+            if (lang === currentLanguage) return;
             currentLanguage = lang;
             document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -713,12 +942,12 @@
             appendChat('system-info', currentLanguage==='id'?'🌸 Bahasa diubah. Silakan pilih kelas, topik, dan mata pelajaran.':'🌸 Language changed. Please select grade, topic, and subject.', true);
         });
     });
-    document.querySelectorAll('.mode-btn').forEach(btn => { btn.addEventListener('click', (e) => { const mode = btn.getAttribute('data-mode'); switchMode(mode); }); });
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => { const mode = btn.getAttribute('data-mode'); switchMode(mode); });
+    });
 
     updateDropdowns();
     switchMode('siswa');
-    loadChatHistory();
-    console.log('✅ MindSeek.edu dengan metadata aktif');
 </script>
 </body>
 </html>
