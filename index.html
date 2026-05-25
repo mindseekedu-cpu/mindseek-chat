@@ -466,7 +466,7 @@
     let currentGrade = '';
     let currentTopic = '';
     let currentSubject = 'Matematika';
-    let currentSessionType = 'Practice'; // 'Practice' atau 'PR'
+    let currentSessionType = 'Practice';
     let selectionsMade = false;
     let chatMessages = [];
     let isLoading = false;
@@ -503,18 +503,55 @@
     const chipText = document.getElementById('chipText');
     const editBtn = document.getElementById('editSelectionBtn');
 
-    function autoResizeTextarea() { userInput.style.height = 'auto'; userInput.style.height = Math.min(userInput.scrollHeight, 150) + 'px'; }
+    function autoResizeTextarea() { 
+        userInput.style.height = 'auto'; 
+        userInput.style.height = Math.min(userInput.scrollHeight, 150) + 'px'; 
+    }
     userInput.addEventListener('input', autoResizeTextarea);
+    
     function updatePlaceholder() {
         userInput.placeholder = currentLanguage === 'id' ? 'Tanya Ai Mi atau upload PR...' : 'Ask Ai Mi or upload homework...';
     }
-    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
-    function renderMarkdown(text) { return escapeHtml(text).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>'); }
-    function appendChat(role, text, isSystem=false) { const div = document.createElement('div'); div.className = `msg ${role}`; if (isSystem) div.classList.add('system-info'); if (role === 'ai') div.innerHTML = renderMarkdown(text); else div.textContent = text; chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight; }
-    function showSystemMessage(msg) { appendChat('system-info', msg, true); }
+    
+    function escapeHtml(str) { 
+        if (!str) return ''; 
+        return str.replace(/[&<>]/g, m => m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); 
+    }
+    
+    function renderMarkdown(text) { 
+        return escapeHtml(text).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>'); 
+    }
+    
+    function appendChat(role, text, isSystem=false) { 
+        const div = document.createElement('div'); 
+        div.className = `msg ${role}`; 
+        if (isSystem) div.classList.add('system-info'); 
+        if (role === 'ai') div.innerHTML = renderMarkdown(text); 
+        else div.textContent = text; 
+        chatBox.appendChild(div); 
+        chatBox.scrollTop = chatBox.scrollHeight; 
+    }
+    
+    function showSystemMessage(msg) { 
+        appendChat('system-info', msg, true); 
+    }
+    
     let loadingDiv = null;
-    function showLoading() { if(loadingDiv) loadingDiv.remove(); loadingDiv = document.createElement('div'); loadingDiv.className = 'msg ai loading-indicator'; loadingDiv.textContent = '💕 Ai Mi is typing...'; chatBox.appendChild(loadingDiv); chatBox.scrollTop = chatBox.scrollHeight; }
-    function hideLoading() { if(loadingDiv) { loadingDiv.remove(); loadingDiv = null; } }
+    function showLoading() { 
+        if(loadingDiv) loadingDiv.remove(); 
+        loadingDiv = document.createElement('div'); 
+        loadingDiv.className = 'msg ai loading-indicator'; 
+        loadingDiv.textContent = '💕 Ai Mi is typing...'; 
+        chatBox.appendChild(loadingDiv); 
+        chatBox.scrollTop = chatBox.scrollHeight; 
+    }
+    
+    function hideLoading() { 
+        if(loadingDiv) { 
+            loadingDiv.remove(); 
+            loadingDiv = null; 
+        } 
+    }
 
     function updateDropdowns() {
         const grades = gradesData[currentLanguage];
@@ -522,13 +559,24 @@
         grades.forEach(g => gradeSelect.innerHTML += `<option value="${g}">${g}</option>`);
         const subjects = subjectsData[currentLanguage];
         subjectSelect.innerHTML = '';
-        subjects.forEach(sub => { const opt = document.createElement('option'); opt.value = sub.value; opt.textContent = sub.label; opt.disabled = sub.disabled; subjectSelect.appendChild(opt); });
+        subjects.forEach(sub => { 
+            const opt = document.createElement('option'); 
+            opt.value = sub.value; 
+            opt.textContent = sub.label; 
+            opt.disabled = sub.disabled; 
+            subjectSelect.appendChild(opt); 
+        });
         updateTopicDropdown();
         updatePlaceholder();
     }
+    
     function updateTopicDropdown() {
         const grade = gradeSelect.value;
-        if (!grade || grade === "") { topicSelect.disabled = true; topicSelect.innerHTML = '<option value="" disabled selected>-- ' + (currentLanguage==='id'?'Pilih Topik':'Select Topic') + ' --</option>'; return; }
+        if (!grade || grade === "") { 
+            topicSelect.disabled = true; 
+            topicSelect.innerHTML = '<option value="" disabled selected>-- ' + (currentLanguage==='id'?'Pilih Topik':'Select Topic') + ' --</option>'; 
+            return; 
+        }
         const topics = topicsData[currentLanguage][grade] || [];
         topicSelect.disabled = false;
         let options = '<option value="" disabled selected>-- ' + (currentLanguage==='id'?'Pilih Topik':'Select Topic') + ' --</option>';
@@ -550,8 +598,13 @@
             if (currentLanguage === 'id') subjectLabel = subject === 'Matematika' ? '📐 Matematika' : subject;
             else subjectLabel = subject === 'Mathematics' ? '📐 Mathematics' : subject;
             chipText.innerHTML = `${subjectLabel} · ${grade} · ${topic} · ${currentSessionType === 'PR' ? 'PR' : (currentLanguage==='id'?'Latihan':'Practice')}`;
+            // Kirim trigger otomatis
             sendContextAndGreeting();
-        } else { selectionPanel.classList.remove('hidden'); summaryChip.classList.add('hidden'); selectionsMade = false; }
+        } else { 
+            selectionPanel.classList.remove('hidden'); 
+            summaryChip.classList.add('hidden'); 
+            selectionsMade = false; 
+        }
     }
 
     async function sendContextAndGreeting() {
@@ -566,17 +619,18 @@
             triggerMessage = `Hi Ai Mi, I am in grade ${gradeNumber}, topic ${topicName}. Ready to learn in English`;
         }
         userInput.value = triggerMessage;
+        // Langsung kirim tanpa perlu klik Send
         await sendMessage(true);
-        setTimeout(() => {
-            userInput.value = '';
-            autoResizeTextarea();
-        }, 50);
+        // Kosongkan input setelah terkirim
+        userInput.value = '';
+        autoResizeTextarea();
     }
 
     async function sendMessage(skipClear=false) {
         let message = userInput.value.trim();
         if (!message || isLoading) return;
         isLoading = true;
+        // Disable tombol Send selama loading
         sendBtn.disabled = true;
         userInput.disabled = true;
         uploadLabel.style.pointerEvents = 'none';
@@ -609,7 +663,7 @@
             const aiReply = data.reply || (currentLanguage==='id'?'Maaf, Ai Mi tidak bisa menjawab.':'Sorry, Ai Mi cannot answer.');
             appendChat('ai', aiReply);
             chatMessages.push({ role: 'assistant', content: aiReply });
-            // Simpan chat ke backend (tanpa menunggu)
+            // Simpan chat ke backend (fire and forget)
             fetch('/api/save-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -632,11 +686,11 @@
             sendBtn.disabled = false;
             userInput.disabled = false;
             uploadLabel.style.pointerEvents = 'auto';
-            userInput.blur();
+            userInput.focus();
         }
     }
 
-    // OCR functions (ringkas)
+    // ========== OCR (singkat) ==========
     async function compressImage(file, maxWidth=1024, quality=0.8) {
         return new Promise((resolve,reject)=>{
             const reader=new FileReader();
@@ -719,7 +773,7 @@
         }
     });
 
-    // ========== PARENT MODE ==========
+    // ========== PARENT MODE FUNCTIONS (ringkas) ==========
     async function loadParentReport() {
         const summaryDiv = document.getElementById('reportSummary');
         summaryDiv.innerHTML = 'Loading...';
@@ -735,8 +789,7 @@
             // PR Section
             const prTopics = data.topics.filter(t => t.session_type === 'PR');
             if (prTopics.length > 0) {
-                html += `<h4>📝 PR (Homework)</h4>`;
-                html += `<table><tr><th>Topik</th><th>Total</th><th>Tuntas</th><th>Mandiri</th><th>Dibantu</th><th>Ganti</th><th>Dampingan</th></tr>`;
+                html += `<h4>📝 PR (Homework)</h4><table class="guidance-table"><tr><th>Topik</th><th>Total</th><th>Tuntas</th><th>Mandiri</th><th>Dibantu</th><th>Ganti</th><th>Dampingan</th></tr>`;
                 for (const t of prTopics) {
                     html += `<tr><td>${escapeHtml(t.topic)}</td><td>${t.total_questions}</td><td>${t.completed}</td><td>${t.independent}</td><td>${t.assisted}</td><td>${t.skipped}</td><td>${t.need_guidance}</td></tr>`;
                 }
@@ -745,8 +798,7 @@
             // Practice Section
             const practiceTopics = data.topics.filter(t => t.session_type === 'Practice');
             if (practiceTopics.length > 0) {
-                html += `<h4>📚 LATIHAN (Practice)</h4>`;
-                html += `<table><tr><th>Topik</th><th>Total</th><th>Tuntas</th><th>Mandiri</th><th>Dibantu</th><th>Ganti</th><th>Dampingan</th><th>Kemandirian</th></tr>`;
+                html += `<h4>📚 LATIHAN (Practice)</h4><table class="guidance-table"><tr><th>Topik</th><th>Total</th><th>Tuntas</th><th>Mandiri</th><th>Dibantu</th><th>Ganti</th><th>Dampingan</th><th>Kemandirian</th></tr>`;
                 for (const t of practiceTopics) {
                     html += `<tr><td>${escapeHtml(t.topic)}</td><td>${t.total_questions}</td><td>${t.completed}</td><td>${t.independent}</td><td>${t.assisted}</td><td>${t.skipped}</td><td>${t.need_guidance}</td><td>${t.independence_percentage}%</td></tr>`;
                 }
@@ -768,13 +820,12 @@
         }
     }
 
-    // Progress per Topik modal
     let topicProgressModal = null;
     async function showTopicProgress() {
         const response = await fetch(`/api/topic-progress?user_id=${USER_ID}&grade=${encodeURIComponent(currentGrade || 'Kelas 2')}`);
         if (!response.ok) { alert('Gagal memuat progress'); return; }
         const data = await response.json();
-        let html = `<h3>📈 Progress per Topik - Kelas ${data.grade}</h3>`;
+        let html = `<h3>📈 Progress per Topik - ${data.grade}</h3>`;
         if (data.topics.length === 0) { html += '<p>Belum ada data latihan.</p>'; }
         else {
             html += `<table class="guidance-table"><tr><th>Topik</th><th>Total</th><th>Mandiri</th><th>Persen</th><th>Distribusi</th><th>Status Data</th><th>Evaluasi</th><th>Terakhir</th></tr>`;
@@ -792,7 +843,6 @@
         topicProgressModal.querySelector('.close-btn').onclick = () => topicProgressModal.remove();
     }
 
-    // Daftar Soal Dampingan modal
     let guidanceModal = null;
     async function showGuidanceQuestions() {
         const response = await fetch(`/api/guidance-questions?user_id=${USER_ID}`);
@@ -866,11 +916,10 @@
             }
             alert('Perubahan disimpan');
             guidanceModal.remove();
-            showGuidanceQuestions(); // refresh
+            showGuidanceQuestions();
         });
     }
 
-    // Parent login
     function loginParent(pin) {
         if (pin === '1234') {
             isParentLogged = true;
@@ -908,7 +957,7 @@
     function clearText() { userInput.value = ''; autoResizeTextarea(); userInput.focus(); }
     function deleteHistory() { if (confirm('Hapus riwayat percakapan?')) { chatMessages = []; while (chatBox.children.length > 0) chatBox.removeChild(chatBox.firstChild); appendChat('system-info', 'Riwayat dihapus. Pilih kelas, topik, dan mata pelajaran untuk memulai.', true); selectionsMade = false; selectionPanel.classList.remove('hidden'); summaryChip.classList.add('hidden'); } }
 
-    // Event listeners
+    // ========== EVENT LISTENERS ==========
     gradeSelect.addEventListener('change', () => { updateTopicDropdown(); topicSelect.value = ""; checkAllSelected(); });
     topicSelect.addEventListener('change', checkAllSelected);
     subjectSelect.addEventListener('change', checkAllSelected);
