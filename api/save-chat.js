@@ -1,77 +1,12 @@
 // api/save-chat.js
-// Menyimpan chat dan mencatat metrik sesi (Sprint 2 final)
-
 const { createClient } = require('@supabase/supabase-js');
-
-// Helper: parsing ringkasan dari balasan AI (format ⭐👑)
-// Contoh balasan: 
-// 🌟 Hasil Latihanmu:\n\nKamu berhasil menjawab 8 soal dengan benar!\n- 5 soal kamu kerjakan sendiri 👑\n- 3 soal kamu butuh bantuan Ai Mi ⭐\n- 1 soal kamu ganti ke soal lain\n- 1 soal kamu simpan untuk didiskusikan dengan orang tua\n\nTotal bintang: 8 dari 10 ⭐\nMahkota kemandirian: 5 👑
-function parseSummary(aiReply) {
-  // Cari angka setelah "berhasil menjawab" atau "answered"
-  let completed = 0;
-  let independent = 0;
-  let assisted = 0;
-  let skipped = 0;
-  let needGuidance = 0;
-  
-  // Pola: "Kamu berhasil menjawab (angka) soal dengan benar!" atau "You answered (angka) questions correctly!"
-  const completedMatch = aiReply.match(/(?:berhasil menjawab|answered)\s+(\d+)\s+soal/);
-  if (completedMatch) completed = parseInt(completedMatch[1]);
-  
-  // Pola untuk mandiri: "soal kamu kerjakan sendiri 👑" atau "questions you did by yourself 👑"
-  const independentMatch = aiReply.match(/(\d+)\s+soal kamu kerjakan sendiri|(\d+)\s+questions you did by yourself/);
-  if (independentMatch) independent = parseInt(independentMatch[1] || independentMatch[2]);
-  
-  // Pola untuk dibantu: "soal kamu butuh bantuan Ai Mi ⭐" atau "questions you needed Ai Mi's help ⭐"
-  const assistedMatch = aiReply.match(/(\d+)\s+soal kamu butuh bantuan Ai Mi|(\d+)\s+questions you needed Ai Mi's help/);
-  if (assistedMatch) assisted = parseInt(assistedMatch[1] || assistedMatch[2]);
-  
-  // Pola untuk skip: "soal kamu ganti ke soal lain" atau "questions you changed"
-  const skippedMatch = aiReply.match(/(\d+)\s+soal kamu ganti|(\d+)\s+questions you changed/);
-  if (skippedMatch) skipped = parseInt(skippedMatch[1] || skippedMatch[2]);
-  
-  // Pola untuk dampingan: "soal kamu simpan untuk didiskusikan" atau "questions you saved for parent/teacher"
-  const guidanceMatch = aiReply.match(/(\d+)\s+soal kamu simpan|(\d+)\s+questions you saved/);
-  if (guidanceMatch) needGuidance = parseInt(guidanceMatch[1] || guidanceMatch[2]);
-  
-  // Jika tidak dapat parsing, coba hitung dari total bintang dan mahkota (fallback)
-  if (completed === 0) {
-    const starMatch = aiReply.match(/Total bintang:\s*(\d+)\s+dari\s+(\d+)/);
-    if (starMatch) completed = parseInt(starMatch[1]);
-  }
-  if (independent === 0) {
-    const crownMatch = aiReply.match(/Mahkota kemandirian:\s*(\d+)/);
-    if (crownMatch) independent = parseInt(crownMatch[1]);
-  }
-  
-  const total = independent + assisted + skipped + needGuidance;
-  return {
-    total_questions: total,
-    completed_count: completed,
-    independent_count: independent,
-    ai_assisted_count: assisted,
-    skipped_count: skipped,
-    need_guidance_count: needGuidance
-  };
-}
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { 
-    user_id, 
-    user_message, 
-    ai_message, 
-    subject, 
-    grade, 
-    topic, 
-    session_id, 
-    difficulty_distribution,
-    session_type  // 'practice' atau 'homework'
-  } = req.body;
-  
+  const { user_id, user_message, ai_message, subject, grade, topic, session_type } = req.body;
   if (!user_id || !user_message || !ai_message) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
@@ -84,7 +19,7 @@ module.exports = async function handler(req, res) {
   }
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-  // 1. Simpan chat ke tabel chats
+  // 1. Simpan ke tabel chats
   const { error: chatError } = await supabase
     .from('chats')
     .insert({
@@ -94,106 +29,82 @@ module.exports = async function handler(req, res) {
       subject: subject || 'Matematika',
       grade: grade || '',
       topic: topic || '',
-      session_type: session_type || 'practice',
+      session_type: session_type || 'Practice',
       timestamp: new Date().toISOString()
     });
+
   if (chatError) {
-    console.error('Error saving chat:', chatError);
-    return res.status(500).json({ error: 'Failed to save chat' });
+    console.error('Save chat error:', chatError);
+    // Tetap lanjut, karena yang penting chat sudah diterima, kita tetap return success? Lebih baik return error agar client tahu.
+    // Tapi untuk MVP, kita return error agar bisa debug.
+    return res.status(500).json({ error: 'Failed to save chat', detail: chatError.message });
   }
 
-  // 2. Jika pesan AI mengandung ringkasan (ada pola "Hasil Latihanmu" atau "Your practice results")
-  if (ai_message.includes('Hasil Latihanmu') || ai_message.includes('Your practice results')) {
-    const summary = parseSummary(ai_message);
-    const { easy = 0, medium = 0, hard = 0 } = difficulty_distribution || {};
-    const finalSessionType = session_type === 'homework' ? 'homework' : 'practice';
+  // 2. Deteksi apakah ini pesan ringkasan akhir sesi (baik dari mode PR maupun Practice)
+  const isSummary = ai_message.includes('Hasil Latihanmu') || ai_message.includes('Your practice results') ||
+                    ai_message.includes('Hasil PR-mu') || ai_message.includes('Homework results');
+  
+  if (isSummary) {
+    // Ekstraksi data dari ringkasan (mendukung bahasa Indonesia dan Inggris)
+    const indonesian = ai_message.includes('Hasil Latihanmu') || ai_message.includes('Hasil PR-mu');
     
-    // Simpan sesi ke tabel sessions
+    let independent = 0, assisted = 0, skipped = 0, needGuidance = 0, total = 0;
+    
+    if (indonesian) {
+      const independentMatch = ai_message.match(/(\d+)\s*soal kamu kerjakan sendiri/i);
+      const assistedMatch = ai_message.match(/(\d+)\s*soal kamu butuh bantuan Ai Mi/i);
+      const skippedMatch = ai_message.match(/(\d+)\s*soal kamu ganti ke soal lain/i);
+      const guidanceMatch = ai_message.match(/(\d+)\s*soal kamu simpan untuk didiskusikan/i);
+      const totalMatch = ai_message.match(/dari (\d+) ⭐/i);
+      
+      independent = independentMatch ? parseInt(independentMatch[1]) : 0;
+      assisted = assistedMatch ? parseInt(assistedMatch[1]) : 0;
+      skipped = skippedMatch ? parseInt(skippedMatch[1]) : 0;
+      needGuidance = guidanceMatch ? parseInt(guidanceMatch[1]) : 0;
+      total = totalMatch ? parseInt(totalMatch[1]) : (independent + assisted + skipped + needGuidance);
+    } else {
+      // English version
+      const independentMatch = ai_message.match(/(\d+)\s*questions you did by yourself/i);
+      const assistedMatch = ai_message.match(/(\d+)\s*questions you needed Ai Mi's help/i);
+      const skippedMatch = ai_message.match(/(\d+)\s*questions you changed/i);
+      const guidanceMatch = ai_message.match(/(\d+)\s*questions you saved for parent/i);
+      const totalMatch = ai_message.match(/out of (\d+) ⭐/i);
+      
+      independent = independentMatch ? parseInt(independentMatch[1]) : 0;
+      assisted = assistedMatch ? parseInt(assistedMatch[1]) : 0;
+      skipped = skippedMatch ? parseInt(skippedMatch[1]) : 0;
+      needGuidance = guidanceMatch ? parseInt(guidanceMatch[1]) : 0;
+      total = totalMatch ? parseInt(totalMatch[1]) : (independent + assisted + skipped + needGuidance);
+    }
+    
+    const completed = independent + assisted;
+    
+    // Simpan ke tabel sessions
     const { error: sessionError } = await supabase
       .from('sessions')
       .insert({
         user_id,
-        session_id: session_id || crypto.randomUUID(),
+        session_id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        session_type: session_type || 'Practice',
         grade: grade || '',
         topic: topic || '',
         subject: subject || 'Matematika',
-        total_questions: summary.total_questions,
-        completed_count: summary.completed_count,
-        independent_count: summary.independent_count,
-        ai_assisted_count: summary.ai_assisted_count,
-        skipped_count: summary.skipped_count,
-        need_guidance_count: summary.need_guidance_count,
-        easy_count: easy,
-        medium_count: medium,
-        hard_count: hard,
-        session_type: finalSessionType,
+        total_questions: total,
+        completed_count: completed,
+        independent_count: independent,
+        ai_assisted_count: assisted,
+        skipped_count: skipped,
+        need_guidance_count: needGuidance,
+        easy_count: 0,    // Bisa diisi nanti jika frontend mengirim distribusi
+        medium_count: 0,
+        hard_count: 0,
         timestamp: new Date().toISOString()
       });
-    if (sessionError) {
-      console.error('Error saving session:', sessionError);
-      // Tidak mengembalikan error agar chat tetap tersimpan
-    }
-
-    // 3. Update tabel topics_progress hanya jika session_type = 'practice' dan topik valid
-    if (finalSessionType === 'practice' && topic && grade && summary.total_questions > 0) {
-      // Ambil data existing
-      const { data: existing, error: fetchError } = await supabase
-        .from('topics_progress')
-        .select('*')
-        .eq('user_id', user_id)
-        .eq('grade', grade)
-        .eq('topic', topic)
-        .maybeSingle();
-      
-      const now = new Date().toISOString();
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Fetch topics_progress error:', fetchError);
-      }
-      
-      if (existing) {
-        // Update existing
-        const newTotal = (existing.total_questions || 0) + summary.total_questions;
-        const newIndependent = (existing.independent_count || 0) + summary.independent_count;
-        const newEasy = (existing.easy_count || 0) + easy;
-        const newMedium = (existing.medium_count || 0) + medium;
-        const newHard = (existing.hard_count || 0) + hard;
-        await supabase
-          .from('topics_progress')
-          .update({
-            total_questions: newTotal,
-            independent_count: newIndependent,
-            easy_count: newEasy,
-            medium_count: newMedium,
-            hard_count: newHard,
-            last_practiced: now
-          })
-          .eq('user_id', user_id)
-          .eq('grade', grade)
-          .eq('topic', topic);
-      } else {
-        // Insert baru
-        await supabase
-          .from('topics_progress')
-          .insert({
-            user_id,
-            grade,
-            topic,
-            subject: subject || 'Matematika',
-            total_questions: summary.total_questions,
-            independent_count: summary.independent_count,
-            easy_count: easy,
-            medium_count: medium,
-            hard_count: hard,
-            last_practiced: now
-          });
-      }
-    }
     
-    // 4. Simpan soal perlu dampingan jika ada (dari pilihan 3 atau skip)
-    // Untuk MVP, kita akan simpan jika ada need_guidance_count > 0 atau skipped_count > 0
-    // Tapi karena kita tidak punya detail soal per soal di sini, kita hanya catat bahwa ada yang butuh dampingan.
-    // Jika ingin menyimpan soal spesifik, frontend harus mengirim array. Untuk sementara, kita lewati.
-    // Bisa ditambahkan nanti.
+    if (sessionError) {
+      console.error('Save session error:', sessionError);
+      // Tidak perlu return error karena chat sudah tersimpan
+    }
   }
 
   return res.status(200).json({ success: true });
